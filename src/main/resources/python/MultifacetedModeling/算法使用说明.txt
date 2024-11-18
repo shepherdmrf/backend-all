@@ -1,0 +1,50 @@
+名称：领域知识指导的多方面建模
+数据：
+      1. DataInput/data-85.xlsx：NASICON数据集；
+      2. DataInput/data-85-split.xlsx：NASICON数据集的数据划分情况（10次划分）；
+      3. DataInput/features_on_all_data.xlsx：基于4种机器学习模型和全部NASICON样本数据，NCOR-FS学得的300个特征组合在10个测试集上的平均预测性能和聚类情况；
+算法：
+（一）通用程序：
+      1. ModelsCV.py：多种机器学习回归模型，供建模和预测时调用；
+      2. Printting.py：创建文件夹和工作簿，并写入一维或二维数据到表格；
+      3. CodesForValidation/Training.py：存储一些常常调用的函数。
+（二）基于核特征的特征选择和模型预测（基于data-85.xlsx数据集）：
+      # NCOR-FS算法实现
+      1. FeatureSelection/MBPSO.py：NCOR-FS方法的主算法（包含种群初始化和进化）；
+      2. FeatureSelection/NondominatedSolutionCal.py：非支配解识别（MBPSO.py调用）；
+      3. FeatureSelection/ViolationDegreeCal.py：NCOR违反度计算（MBPSO.py调用）；
+      4. FeatureSelection/DncorCal：高度相关特征识别；
+
+      # 基于NCOR-FS方法构建特征决策表
+      5. CodesForValidation/DKncorFSonTrian.py：基于NCOR-FS方法，多种模型在测试集和验证集上的预测性能；
+
+      # 数据-核特征识别
+      6. KernelCal/step1_clustering：对特征决策表进行聚类；
+      7. KernelCal/step2_count：计算特征决策表每个分组中各个特征出现的频率；
+      8. KernelCal/step3_threshold_analysis：确定约简决策表的阈值；
+      9. KernelCal/step4_decision_table_construct：最简决策表构建；
+      10. KernelCal/step5_kernel_cal：基于最简决策表的“求核”；
+      11. KernelCal/step6_cal_best_class：识别特征决策表分组中的最优类；
+      12. KernelCal/step7_cal_kernel_freq：计算每个特征在特征决策表最优类中的频率，并根据阈值得到“正-数据核特征”；
+
+      # 关键-领域核特征识别
+      13. CodesForValidation/ModelSelection.py：通过比较模型预测性能，选择“关键-领域核特征”；
+
+      # 基于不同特征组合的机器学习模型在测试集上的预测性能
+      14. CodesForValidation/DKncorFSonAllTrian.py：不添加任何核特征的DKNCOR-FS方法；
+      15. CodesForValidation/DKncorFSonAllTrian-KnowKernel.py：仅添加“关键-领域核特征”的DKNCOR-FS方法；
+      16. CodesForValidation/DKncorFSonAllTrian-KnowPosKernel.py：添加“关键-领域核特征+正-数据核特征”的DKNCOR-FS方法；
+      17. CodesForValidation/DKncorFSonAllTrian-PosKernel.py：仅添加“正-数据核特征”的DKNCOR-FS方法。
+（三）多方面构效关系分析（基于features_on_all_data.xlsx数据集）：
+      1. RuleExtraction/KNN/visualization.py：绘制聚类层次树；
+      2. RuleExtraction/MLR/training.py：基于最优特征团训练MLR模型，并输出特征重要度；
+      3. RuleExtraction/MLR/correlation_cal.py：计算维度间的PCC（只取特征与目标函数的PCC）；
+      4. RuleExtraction/MLR/importance_bar.py：绘制特征重要度的水平柱状图；
+      5. RuleExtraction/SVR/training.py：基于最优特征团训练SVR模型，并输出支持向量的样本编号；
+      6. RuleExtraction/SVR/distribution_analysis.py：支持向量在高维特征空间的分布。
+输出：
+      1. DataOutput/模型名：不同机器学习模型在计算“数据-核特征”的过程中产生的中间结果，final_kernels.xlsx中存储了“正-数据核特征”；
+      2. DataOutput/best_class：存储不同模型的特征决策表中的“最优类”；
+      3. Results/OnTrain：NCOR-FS方法得到的特征组合、领域-核特征，以及二者在训练集和验证集上的预测性能；
+      4. Results/OnAllTrain：NCOR-FS方法得到的特征组合及其在“训练集+验证集”和测试集上的预测性能；
+      5. Results/OnAllTrainKernel：带核特征的NCOR-FS方法得到的特征组合及其在“训练集+验证集”和测试集上的预测性能。
