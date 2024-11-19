@@ -41,7 +41,6 @@ public class PlatformServiceImpl implements PlatformService {
     public JSONObject SolveFeatureTable(String userId, String roleId, int page, int pageSize, String value1, String value2) {
         JSONArray result = new JSONArray();
         JSONObject response = new JSONObject();
-        CallPythonScript.call();
         int start = (page - 1) * pageSize;
         int totalRecords;
 

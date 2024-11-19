@@ -1,8 +1,11 @@
 import warnings
 import numpy as np
-from CodesForValidation.Training import load_data, model_selection
+import sys
+import io
+from Training import load_data, model_selection
 warnings.filterwarnings('ignore')
-
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8')
 # 选择“关键领域核特征”
 
 if __name__ == '__main__':
@@ -23,3 +26,4 @@ if __name__ == '__main__':
             wb = '../Results/OnTrain/KnowledgeKernel/' + name[0] + '/' + str(i) + '.xlsx'
             dims = np.hstack((x, [45]))
             model_selection(all_data[:, dims], all_train_indices, test_indices, name, wb, partitions)
+    print("测试成功")

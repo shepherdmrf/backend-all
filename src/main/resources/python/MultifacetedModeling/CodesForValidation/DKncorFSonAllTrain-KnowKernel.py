@@ -1,9 +1,12 @@
 import numpy as np
 import copy
 import warnings
-from CodesForEvaluation.Training import Data, load_data, FS_test
+import sys
+import io
+from Training import Data, load_data, FS_test
 warnings.filterwarnings('ignore')
-
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8')
 # 基于训练集+验证集的所有样本，执行带“关键领域核特征”的NCOR-FS，并在测试集上进行预测
 
 # NASICON数据集的KNCOR

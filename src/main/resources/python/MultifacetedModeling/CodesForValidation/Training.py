@@ -2,6 +2,12 @@ import pandas as pd
 import numpy as np
 from sklearn import preprocessing
 from sklearn.metrics import mean_squared_error, r2_score
+import sys
+import os
+current_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(current_dir)  # 上一层目录
+sys.path.append(parent_dir)
+
 from Printting import create_directory, create_workbook, save_to_excel_1d
 from FeatureSelection.DncorCal import DataDrivenNCOR
 from FeatureSelection.MBPSO import BPSO
