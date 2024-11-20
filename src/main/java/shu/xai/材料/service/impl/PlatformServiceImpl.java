@@ -11,6 +11,7 @@ import shu.xai.材料.service.PlatformService;
 import shu.xai.材料.service.CallPython.CallPythonScript;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 @Service
@@ -116,6 +117,12 @@ public class PlatformServiceImpl implements PlatformService {
             e.printStackTrace();
         }
         return response;
+    }
+
+    @Override
+    public JSONObject trainingresolve(String userId, String roleId, int pattern,List<List<Integer>> KnowledgeKernels) {
+        CallPythonScript.test(KnowledgeKernels.toString());
+        return null;
     }
 }
 

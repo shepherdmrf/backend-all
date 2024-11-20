@@ -86,19 +86,57 @@ public class CallPythonScript {
         }
     }
 
-    public static void CallKnowlegeKernal() {
+    public static void CallKnowlegeKernal(String arg) {
         // 设置 Python 可执行文件路径和脚本路径
         String pythonPath = "python.exe";
         String scriptPath = "./ModelSelection.py";
 
         // 创建 ProcessBuilder
-        ProcessBuilder processBuilder = new ProcessBuilder(pythonPath, scriptPath);
+        ProcessBuilder processBuilder = new ProcessBuilder(pythonPath, scriptPath,arg);
 
         // 获取并修改环境变量
         String systemPath = System.getenv("PATH");
         Map<String, String> env = processBuilder.environment();
         env.put("PATH", systemPath);
         processBuilder.directory(new java.io.File("./src/main/resources/python/MultifacetedModeling/CodesForValidation"));
+        try {
+            // 启动进程
+            Process process = processBuilder.start();
+
+            // 读取标准输出
+            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8));
+            String line;
+            while ((line = reader.readLine()) != null) {
+                System.out.println(line);
+            }
+
+            // 读取错误输出
+            BufferedReader errorReader = new BufferedReader(new InputStreamReader(process.getErrorStream(), StandardCharsets.UTF_8));
+            while ((line = errorReader.readLine()) != null) {
+                System.err.println("Error: " + line);
+            }
+
+            // 等待进程结束
+            int exitCode = process.waitFor();
+            System.out.println("Python script exited with code: " + exitCode);
+
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void test(String arg) {
+        // 设置 Python 可执行文件路径和脚本路径
+        String pythonPath = "python.exe";
+        String scriptPath = "C:\\Users\\MSI\\PycharmProjects\\pythonProject\\test.py";
+
+        // 创建 ProcessBuilder
+        ProcessBuilder processBuilder = new ProcessBuilder(pythonPath, scriptPath,arg);
+
+        // 获取并修改环境变量
+        String systemPath = System.getenv("PATH");
+        Map<String, String> env = processBuilder.environment();
+        env.put("PATH", systemPath);
         try {
             // 启动进程
             Process process = processBuilder.start();

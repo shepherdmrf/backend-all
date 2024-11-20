@@ -9,6 +9,9 @@ sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8')
 # 选择“关键领域核特征”
 
 if __name__ == '__main__':
+    if len(sys.argv) > 1:
+        kernels = ast.literal_eval(sys.argv[1])
+        print(kernels)
     load_data_wb = '../DataInput/data-85.xlsx'
     load_indices_wb = '../DataInput/data-85-split.xlsx'
     all_data = load_data(load_data_wb, sheet_name='data')
@@ -17,7 +20,6 @@ if __name__ == '__main__':
     test_indices = load_data(load_indices_wb, sheet_name='Test').T
     all_train_indices = np.hstack((train_indices, validation_indices))
 
-    kernels = [[35], [34, 35], [36], [37]]
     partitions = 10
 
     model_names = [['MLR'], ['SVR'], ['KNN'], ['GPR']]

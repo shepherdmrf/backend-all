@@ -10,12 +10,16 @@ import org.springframework.web.bind.annotation.RestController;
 import shu.xai.sys.controller.UserController;
 import shu.xai.sys.enums.ResultCodeEnums;
 import shu.xai.sys.utils.ResultUtils;
+import shu.xai.材料.page.TrainingPattern;
 import shu.xai.材料.page.value;
 import shu.xai.材料.page.PageRequest;
 import shu.xai.材料.page.PageRequestCopy;
 import shu.xai.材料.service.PlatformService;
 
 import javax.servlet.http.HttpServletRequest;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static sun.misc.Version.print;
 
@@ -27,24 +31,8 @@ public class PlatformController {
     @Autowired
     private PlatformService platformService;
 
-//    @RequestMapping("/getfeatureTable")
-//    public String getFeatureTable(@RequestBody PageRequest pageRequest, HttpServletRequest request) {
-//        String result="";
-//        try{
-//            String userId= String.valueOf(request.getSession().getAttribute("userId"));
-//            String roleId= String.valueOf(request.getSession().getAttribute("roleId"));
-//            int page = pageRequest.getPage();
-//            int pagesize = pageRequest.getPageSize();
-//            JSONObject paramsResult=platformService.GetFeatureTable(userId,roleId,page,pagesize);
-//            result= ResultUtils.commonResult(ResultCodeEnums.SUCCESS.getCode(),ResultCodeEnums.SUCCESS.getMsg(),paramsResult.toJSONString());
-//        }catch (Exception e){
-//            logger.error("error",e);
-//            result= ResultUtils.commonResult(ResultCodeEnums.UNKNOWN_ERROR.getCode(),ResultCodeEnums.UNKNOWN_ERROR.getMsg(),"");
-//        }
-//        return result;
-//    }
     @RequestMapping("/getSign")
-    public String getFeatureTable( HttpServletRequest request) {
+    public String getSignTable( HttpServletRequest request) {
         String result="";
         try{
             String userId= String.valueOf(request.getSession().getAttribute("userId"));
@@ -57,6 +45,7 @@ public class PlatformController {
         }
         return result;
     }
+
     @RequestMapping("/searchFeatureTable")
     public String SearchTable(@RequestBody PageRequestCopy pageRequest, HttpServletRequest request) {
         String result="";
@@ -91,6 +80,7 @@ public class PlatformController {
         }
         return result;
     }
+
     @RequestMapping("/getPositiveKernel")
     public String sendPositiveKernel(@RequestBody value PositiveKernel, HttpServletRequest request)
     {
@@ -99,8 +89,27 @@ public class PlatformController {
             String userId = String.valueOf(request.getSession().getAttribute("userId"));
             String roleId = String.valueOf(request.getSession().getAttribute("roleId"));
             String value =  PositiveKernel.getValue();
-            JSONObject paramsResult = platformService.SolveKnowledgeKernel(userId, roleId, value);
+            JSONObject paramsResult = platformService.SolvePositiveKernel(userId, roleId, value);
             result = ResultUtils.commonResult(ResultCodeEnums.SUCCESS.getCode(), ResultCodeEnums.SUCCESS.getMsg(), paramsResult.toJSONString());
+        }catch (Exception e){
+            logger.error("error",e);
+            result= ResultUtils.commonResult(ResultCodeEnums.UNKNOWN_ERROR.getCode(),ResultCodeEnums.UNKNOWN_ERROR.getMsg(),"");
+        }
+        return result;
+    }
+    @RequestMapping("/training")
+    public String training(@RequestBody TrainingPattern tp, HttpServletRequest request)
+    {
+        String result="";
+        try {
+            System.out.println("Received pattern: " + tp.getPattern());
+            System.out.println("Received KnowledgeKernel: " + tp.getValue());
+            String userId = String.valueOf(request.getSession().getAttribute("userId"));
+            String roleId = String.valueOf(request.getSession().getAttribute("roleId"));
+            List<List<Integer>> KnowledgeKernels =  tp.getValue();
+            int pattern=tp.getPattern();
+            JSONObject paramsResult = platformService.trainingresolve(userId, roleId, pattern,KnowledgeKernels);
+            result = ResultUtils.commonResult(ResultCodeEnums.SUCCESS.getCode(), ResultCodeEnums.SUCCESS.getMsg(), "SUCCESS");
         }catch (Exception e){
             logger.error("error",e);
             result= ResultUtils.commonResult(ResultCodeEnums.UNKNOWN_ERROR.getCode(),ResultCodeEnums.UNKNOWN_ERROR.getMsg(),"");
