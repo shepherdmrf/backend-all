@@ -121,7 +121,7 @@ public class PlatformServiceImpl implements PlatformService {
 
     @Override
     public JSONObject trainingresolve(String userId, String roleId, int pattern,List<List<Integer>> KnowledgeKernels) {
-        CallPythonScript.test(KnowledgeKernels.toString());
+        CallPythonScript.CallKnowlegeKernal(KnowledgeKernels.toString());
         return null;
     }
 }
