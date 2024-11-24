@@ -35,6 +35,12 @@ spring:
         username: root
         password: 123456
 
+      data:
+        type: com.alibaba.druid.pool.DruidDataSource
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        url: jdbc:mysql://localhost:3306/data?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=false&serverTimezone=GMT%2B8
+        username: root
+        password: 123456
       # 连接池配置
       initial-size: 5
       min-idle: 5
@@ -107,11 +113,13 @@ project-params:
   project-ip: localhost   # 配置项目生产ip,测试时替换成自己的就好
 
 
+
 #  data:
 #      mongodb:
 #        uri: mongodb://yzyMongodb:123456@localhost:27017/test?authSource=admin
         #　authSource=admin加上用户所在库
-
+mybatis:
+  mapper-locations=classpath:mapper/*:
 #  redis:
 #      host: 127.0.0.1  # IP
 #      port: 6379  # 端口号

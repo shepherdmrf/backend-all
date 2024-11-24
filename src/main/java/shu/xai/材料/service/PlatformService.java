@@ -10,6 +10,6 @@ public interface PlatformService {
     JSONObject SolveFeatureTable(String userId, String roleId, int page, int pageSize, String value1, String value2);
     JSONObject SolveKnowledgeKernel(String userId, String roleId, String value);
     JSONObject SolvePositiveKernel(String userId, String roleId, String value);
-    JSONObject trainingresolve(String userId, String roleId, int pattern, List<List<Integer>> KnowledgeKernels);
+    JSONObject GetKnowlegekernels(String userId, String roleId, List<List<Integer>> KnowledgeKernels);
 }
 

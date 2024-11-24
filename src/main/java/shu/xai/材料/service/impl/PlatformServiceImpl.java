@@ -120,7 +120,7 @@ public class PlatformServiceImpl implements PlatformService {
     }
 
     @Override
-    public JSONObject trainingresolve(String userId, String roleId, int pattern,List<List<Integer>> KnowledgeKernels) {
+    public JSONObject GetKnowlegekernels(String userId, String roleId,List<List<Integer>> KnowledgeKernels) {
         CallPythonScript.CallKnowlegeKernal(KnowledgeKernels.toString());
         return null;
     }

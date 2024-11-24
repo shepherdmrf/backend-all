@@ -7,9 +7,6 @@ public class value {
         this.value = value;
     }
 
-    public value() {
-    }
-
     public String getValue() {
         return value;
     }

@@ -10,15 +10,13 @@ import org.springframework.web.bind.annotation.RestController;
 import shu.xai.sys.controller.UserController;
 import shu.xai.sys.enums.ResultCodeEnums;
 import shu.xai.sys.utils.ResultUtils;
-import shu.xai.材料.page.TrainingPattern;
+import shu.xai.材料.page.KnowledgeList;
 import shu.xai.材料.page.value;
-import shu.xai.材料.page.PageRequest;
 import shu.xai.材料.page.PageRequestCopy;
 import shu.xai.材料.service.PlatformService;
 
 import javax.servlet.http.HttpServletRequest;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static sun.misc.Version.print;
@@ -98,17 +96,15 @@ public class PlatformController {
         return result;
     }
     @RequestMapping("/training")
-    public String training(@RequestBody TrainingPattern tp, HttpServletRequest request)
+    public String training(@RequestBody KnowledgeList tp, HttpServletRequest request)
     {
         String result="";
         try {
-            System.out.println("Received pattern: " + tp.getPattern());
-            System.out.println("Received KnowledgeKernel: " + tp.getValue());
+            System.out.println("Received KnowledgeList: " + tp.getV());
             String userId = String.valueOf(request.getSession().getAttribute("userId"));
             String roleId = String.valueOf(request.getSession().getAttribute("roleId"));
-            List<List<Integer>> KnowledgeKernels =  tp.getValue();
-            int pattern=tp.getPattern();
-            JSONObject paramsResult = platformService.trainingresolve(userId, roleId, pattern,KnowledgeKernels);
+            List<List<Integer>> KnowledgeKernels =  tp.getV();
+            JSONObject paramsResult = platformService.GetKnowlegekernels(userId, roleId,KnowledgeKernels);
             result = ResultUtils.commonResult(ResultCodeEnums.SUCCESS.getCode(), ResultCodeEnums.SUCCESS.getMsg(), "SUCCESS");
         }catch (Exception e){
             logger.error("error",e);
