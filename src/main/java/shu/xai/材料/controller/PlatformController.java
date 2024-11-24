@@ -10,11 +10,10 @@ import org.springframework.web.bind.annotation.RestController;
 import shu.xai.sys.controller.UserController;
 import shu.xai.sys.enums.ResultCodeEnums;
 import shu.xai.sys.utils.ResultUtils;
-import shu.xai.材料.page.KnowledgeList;
 import shu.xai.材料.page.value;
 import shu.xai.材料.page.PageRequestCopy;
 import shu.xai.材料.service.PlatformService;
-
+import shu.xai.材料.page.Knowledge;
 import javax.servlet.http.HttpServletRequest;
 
 import java.util.List;
@@ -96,7 +95,7 @@ public class PlatformController {
         return result;
     }
     @RequestMapping("/training")
-    public String training(@RequestBody KnowledgeList tp, HttpServletRequest request)
+    public String training(@RequestBody Knowledge tp, HttpServletRequest request)
     {
         String result="";
         try {
