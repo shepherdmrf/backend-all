@@ -3,15 +3,16 @@ package shu.xai.材料.service.impl;
 import com.alibaba.fastjson.JSONArray;
 
 import com.alibaba.fastjson.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import shu.xai.sys.enums.RoleCodeEnums;
+import shu.xai.材料.ExcelSolve.ExcelSqlSolve;
 import shu.xai.材料.service.PlatformService;
-import shu.xai.材料.service.CallPython.CallPythonScript;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 @Service
@@ -19,6 +20,9 @@ public class PlatformServiceImpl implements PlatformService {
 
     @Resource(name = "jdbcTemplatefeaturetable")
     private JdbcTemplate jdbcTemplatefeature;
+
+    @Autowired
+    private ExcelSqlSolve excelSqlSolve;
 
     public JSONObject GetSign(String userId, String roleId) {
         JSONArray result = new JSONArray();
@@ -121,7 +125,29 @@ public class PlatformServiceImpl implements PlatformService {
 
     @Override
     public JSONObject GetKnowlegekernels(String userId, String roleId,List<List<Integer>> KnowledgeKernels) {
-        CallPythonScript.CallKnowlegeKernal(KnowledgeKernels.toString());
+//        CallPythonScript.CallKnowlegeKernal(KnowledgeKernels.toString());
+        System.out.println(KnowledgeKernels.size());
+        List<String> models = Arrays.asList("GPR", "KNN", "MLR", "SVR");
+        for (int i=0;i<models.size();i++)
+        {
+            String tablename =models.get(i)+"_knowledgekernels_analysis";
+            String Sheetname =models.get(i)+"-10";
+            try {
+                excelSqlSolve.clearTable(tablename);
+            } catch (Exception e) {
+                e.printStackTrace();
+           }
+            for (int j=0;j<KnowledgeKernels.size();j++){
+                String exceladdress="./src/main/resources/python/MultifacetedModeling/Results/OnTrain/KnowledgeKernel/"+models.get(i)+"/"+String.valueOf(j)+".xlsx";
+                String Sql= "INSERT INTO `" + tablename + "` (`CV RMSE`, `Test RMSE`, `Test R2`) VALUES (?, ?, ?)";
+                ;
+                try {
+                    excelSqlSolve.insertExcelDataToSQL(exceladdress,Sql,Sheetname);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
         return null;
     }
 }
