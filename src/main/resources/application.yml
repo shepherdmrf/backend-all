@@ -1,0 +1,12 @@
+spring:
+  profiles:
+    active: dev
+  jackson:
+    property-naming-strategy: UPPER_CAMEL_CASE
+
+
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
+  type-aliases-package: shu.xai.dataAnalysis.entity
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
