@@ -65,5 +65,3 @@ def convertKnowlegeKernelTosql(KnowlegeKernel):
 
 
 
-
-convertKnowlegeKernelTosql([[35], [34, 35], [36], [37]])

@@ -7,9 +7,13 @@ import java.util.List;
 
 public interface PlatformService {
     JSONObject GetSign(String userId, String roleId);
-    JSONObject SolveFeatureTable(String userId, String roleId, int page, int pageSize, String value1, String value2);
-    JSONObject SolveKnowledgeKernel(String userId, String roleId, String value);
-    JSONObject SolvePositiveKernel(String userId, String roleId, String value);
+    void SolveFeatureTable(String userId, String roleId,int split,int repeat,int iteration);
+    JSONObject SearchFeatureTable(String userId, String roleId, int page, int pageSize, String value1);
+    void SolvePositiveKernel(String userId, String roleId);
     JSONObject GetKnowlegekernels(String userId, String roleId, List<List<Integer>> KnowledgeKernels);
+    void Solvecluster();
+    void SolvesimpleDecision(String userId, String roleId);
+    JSONObject Search(String userId, String roleId,String value);
+    void Solvekernel(String userId,String roleId);
 }
 

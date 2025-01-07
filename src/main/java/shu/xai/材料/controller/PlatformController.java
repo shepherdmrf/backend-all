@@ -6,16 +6,17 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import shu.xai.sys.controller.UserController;
 import shu.xai.sys.enums.ResultCodeEnums;
 import shu.xai.sys.utils.ResultUtils;
+import shu.xai.材料.page.PageRequest;
 import shu.xai.材料.page.value;
 import shu.xai.材料.page.PageRequestCopy;
 import shu.xai.材料.service.PlatformService;
 import shu.xai.材料.page.Knowledge;
 import javax.servlet.http.HttpServletRequest;
-
 import java.util.List;
 
 import static sun.misc.Version.print;
@@ -43,17 +44,20 @@ public class PlatformController {
         return result;
     }
 
-    @RequestMapping("/searchFeatureTable")
-    public String SearchTable(@RequestBody PageRequestCopy pageRequest, HttpServletRequest request) {
+    @RequestMapping("/FeatureTable")
+    public String FeatureTable(@RequestBody PageRequestCopy pageRequest, HttpServletRequest request) {
         String result="";
         try{
             String userId= String.valueOf(request.getSession().getAttribute("userId"));
             String roleId= String.valueOf(request.getSession().getAttribute("roleId"));
             int page = pageRequest.getPage();
             int pagesize = pageRequest.getPageSize();
+            int split=pageRequest.getSplit();
+            int repeat=pageRequest.getRepeat();
+            int iteration=pageRequest.getIteration();
             String value1= pageRequest.getValue1();
-            String value2=pageRequest.getValue2();
-            JSONObject paramsResult=platformService.SolveFeatureTable(userId,roleId,page,pagesize,value1,value2);
+            platformService.SolveFeatureTable(userId,roleId,split,repeat,iteration);
+            JSONObject paramsResult= platformService.SearchFeatureTable(userId,roleId,page,pagesize,value1);
             result= ResultUtils.commonResult(ResultCodeEnums.SUCCESS.getCode(),ResultCodeEnums.SUCCESS.getMsg(),paramsResult.toJSONString());
         }catch (Exception e){
             logger.error("error",e);
@@ -61,16 +65,18 @@ public class PlatformController {
         }
         return result;
     }
-    @RequestMapping("/getKnowledgeKernel")
-    public String sendKnowledgeKernel(@RequestBody value KnowledgeKernel, HttpServletRequest request)
-    {
+
+    @RequestMapping("/searchFeatureTable")
+    public String searchFeature(@RequestBody PageRequestCopy pageRequestCopy, HttpServletRequest request) {
         String result="";
-        try {
-            String userId = String.valueOf(request.getSession().getAttribute("userId"));
-            String roleId = String.valueOf(request.getSession().getAttribute("roleId"));
-            String value =  KnowledgeKernel.getValue();
-            JSONObject paramsResult = platformService.SolveKnowledgeKernel(userId, roleId, value);
-            result = ResultUtils.commonResult(ResultCodeEnums.SUCCESS.getCode(), ResultCodeEnums.SUCCESS.getMsg(), paramsResult.toJSONString());
+        try{
+            String userId= String.valueOf(request.getSession().getAttribute("userId"));
+            String roleId= String.valueOf(request.getSession().getAttribute("roleId"));
+            int page=pageRequestCopy.getPage();
+            int pageSize=pageRequestCopy.getPageSize();
+            String value1= pageRequestCopy.getValue1();
+            JSONObject paramsResult= platformService.SearchFeatureTable(userId,roleId,page,pageSize,value1);
+            result= ResultUtils.commonResult(ResultCodeEnums.SUCCESS.getCode(),ResultCodeEnums.SUCCESS.getMsg(),paramsResult.toJSONString());
         }catch (Exception e){
             logger.error("error",e);
             result= ResultUtils.commonResult(ResultCodeEnums.UNKNOWN_ERROR.getCode(),ResultCodeEnums.UNKNOWN_ERROR.getMsg(),"");
@@ -78,22 +84,7 @@ public class PlatformController {
         return result;
     }
 
-    @RequestMapping("/getPositiveKernel")
-    public String sendPositiveKernel(@RequestBody value PositiveKernel, HttpServletRequest request)
-    {
-        String result="";
-        try {
-            String userId = String.valueOf(request.getSession().getAttribute("userId"));
-            String roleId = String.valueOf(request.getSession().getAttribute("roleId"));
-            String value =  PositiveKernel.getValue();
-            JSONObject paramsResult = platformService.SolvePositiveKernel(userId, roleId, value);
-            result = ResultUtils.commonResult(ResultCodeEnums.SUCCESS.getCode(), ResultCodeEnums.SUCCESS.getMsg(), paramsResult.toJSONString());
-        }catch (Exception e){
-            logger.error("error",e);
-            result= ResultUtils.commonResult(ResultCodeEnums.UNKNOWN_ERROR.getCode(),ResultCodeEnums.UNKNOWN_ERROR.getMsg(),"");
-        }
-        return result;
-    }
+
     @RequestMapping("/training")
     public String training(@RequestBody Knowledge tp, HttpServletRequest request)
     {
@@ -104,7 +95,122 @@ public class PlatformController {
             String roleId = String.valueOf(request.getSession().getAttribute("roleId"));
             List<List<Integer>> KnowledgeKernels =  tp.getV();
             JSONObject paramsResult = platformService.GetKnowlegekernels(userId, roleId,KnowledgeKernels);
-            result = ResultUtils.commonResult(ResultCodeEnums.SUCCESS.getCode(), ResultCodeEnums.SUCCESS.getMsg(), "SUCCESS");
+            result = ResultUtils.commonResult(ResultCodeEnums.SUCCESS.getCode(), ResultCodeEnums.SUCCESS.getMsg(), paramsResult.toJSONString());
+        }catch (Exception e){
+            logger.error("error",e);
+            result= ResultUtils.commonResult(ResultCodeEnums.UNKNOWN_ERROR.getCode(),ResultCodeEnums.UNKNOWN_ERROR.getMsg(),"");
+        }
+        return result;
+    }
+    @RequestMapping("/cluster")
+    public String cluster(@RequestBody PageRequest pageRequest, HttpServletRequest request) {
+        String result="";
+        try{
+            String userId= String.valueOf(request.getSession().getAttribute("userId"));
+            String roleId= String.valueOf(request.getSession().getAttribute("roleId"));
+            int page = pageRequest.getPage();
+            int pagesize = pageRequest.getPageSize();
+            String value1= pageRequest.getValue1();
+            platformService.Solvecluster();
+            JSONObject paramsResult= platformService.SearchFeatureTable(userId,roleId,page,pagesize,value1);
+            result= ResultUtils.commonResult(ResultCodeEnums.SUCCESS.getCode(),ResultCodeEnums.SUCCESS.getMsg(),paramsResult.toJSONString());
+        }catch (Exception e){
+            logger.error("error",e);
+            result= ResultUtils.commonResult(ResultCodeEnums.UNKNOWN_ERROR.getCode(),ResultCodeEnums.UNKNOWN_ERROR.getMsg(),"");
+        }
+        return result;
+    }
+    @RequestMapping("/simple")
+    public String Solvesimple(@RequestBody value value ,HttpServletRequest request) {
+        String result="";
+        try{
+            String userId= String.valueOf(request.getSession().getAttribute("userId"));
+            String roleId= String.valueOf(request.getSession().getAttribute("roleId"));
+            platformService.SolvesimpleDecision(userId,roleId);
+            String v=value.getValue();
+            JSONObject paramsResult=platformService.Search(userId,roleId,v);
+            result= ResultUtils.commonResult(ResultCodeEnums.SUCCESS.getCode(),ResultCodeEnums.SUCCESS.getMsg(),paramsResult.toJSONString());
+        }catch (Exception e){
+            logger.error("error",e);
+            result= ResultUtils.commonResult(ResultCodeEnums.UNKNOWN_ERROR.getCode(),ResultCodeEnums.UNKNOWN_ERROR.getMsg(),"");
+        }
+        return result;
+    }
+
+    @RequestMapping("/searchsimple")
+    public String Searchsimple(@RequestBody value value ,HttpServletRequest request) {
+        String result="";
+        try{
+            String userId= String.valueOf(request.getSession().getAttribute("userId"));
+            String roleId= String.valueOf(request.getSession().getAttribute("roleId"));
+            String v=value.getValue();
+            JSONObject paramsResult=platformService.Search(userId,roleId,v);
+            result= ResultUtils.commonResult(ResultCodeEnums.SUCCESS.getCode(),ResultCodeEnums.SUCCESS.getMsg(),paramsResult.toJSONString());
+        }catch (Exception e){
+            logger.error("error",e);
+            result= ResultUtils.commonResult(ResultCodeEnums.UNKNOWN_ERROR.getCode(),ResultCodeEnums.UNKNOWN_ERROR.getMsg(),"");
+        }
+        return result;
+    }
+
+    @RequestMapping("/kernel")
+    public String solvekernel(@RequestBody value value ,HttpServletRequest request) {
+        String result="";
+        try{
+            String userId= String.valueOf(request.getSession().getAttribute("userId"));
+            String roleId= String.valueOf(request.getSession().getAttribute("roleId"));
+            platformService.Solvekernel(userId,roleId);
+            String v=value.getValue();
+            JSONObject paramsResult=platformService.Search(userId,roleId,v);
+            result= ResultUtils.commonResult(ResultCodeEnums.SUCCESS.getCode(),ResultCodeEnums.SUCCESS.getMsg(),paramsResult.toJSONString());
+        }catch (Exception e){
+            logger.error("error",e);
+            result= ResultUtils.commonResult(ResultCodeEnums.UNKNOWN_ERROR.getCode(),ResultCodeEnums.UNKNOWN_ERROR.getMsg(),"");
+        }
+        return result;
+    }
+    @RequestMapping("/searchkernel")
+    public String Searchkernel(@RequestBody value value ,HttpServletRequest request) {
+        String result="";
+        try{
+            String userId= String.valueOf(request.getSession().getAttribute("userId"));
+            String roleId= String.valueOf(request.getSession().getAttribute("roleId"));
+            String v=value.getValue();
+            JSONObject paramsResult=platformService.Search(userId,roleId,v);
+            result= ResultUtils.commonResult(ResultCodeEnums.SUCCESS.getCode(),ResultCodeEnums.SUCCESS.getMsg(),paramsResult.toJSONString());
+        }catch (Exception e){
+            logger.error("error",e);
+            result= ResultUtils.commonResult(ResultCodeEnums.UNKNOWN_ERROR.getCode(),ResultCodeEnums.UNKNOWN_ERROR.getMsg(),"");
+        }
+        return result;
+    }
+
+
+    @RequestMapping("/positivekernel")
+    public String solvepositivekernel(@RequestBody value value ,HttpServletRequest request) {
+        String result="";
+        try{
+            String userId= String.valueOf(request.getSession().getAttribute("userId"));
+            String roleId= String.valueOf(request.getSession().getAttribute("roleId"));
+            platformService.SolvePositiveKernel(userId,roleId);
+            String v=value.getValue();
+            JSONObject paramsResult=platformService.Search(userId,roleId,v);
+            result= ResultUtils.commonResult(ResultCodeEnums.SUCCESS.getCode(),ResultCodeEnums.SUCCESS.getMsg(),paramsResult.toJSONString());
+        }catch (Exception e){
+            logger.error("error",e);
+            result= ResultUtils.commonResult(ResultCodeEnums.UNKNOWN_ERROR.getCode(),ResultCodeEnums.UNKNOWN_ERROR.getMsg(),"");
+        }
+        return result;
+    }
+    @RequestMapping("/searchpositivekernel")
+    public String Searchpositivekernel(@RequestBody value value ,HttpServletRequest request) {
+        String result="";
+        try{
+            String userId= String.valueOf(request.getSession().getAttribute("userId"));
+            String roleId= String.valueOf(request.getSession().getAttribute("roleId"));
+            String v=value.getValue();
+            JSONObject paramsResult=platformService.Search(userId,roleId,v);
+            result= ResultUtils.commonResult(ResultCodeEnums.SUCCESS.getCode(),ResultCodeEnums.SUCCESS.getMsg(),paramsResult.toJSONString());
         }catch (Exception e){
             logger.error("error",e);
             result= ResultUtils.commonResult(ResultCodeEnums.UNKNOWN_ERROR.getCode(),ResultCodeEnums.UNKNOWN_ERROR.getMsg(),"");

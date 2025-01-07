@@ -1,3 +1,10 @@
+import io
+import ast
+import os
+import sys
+current_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(current_dir)  # 上一层目录
+sys.path.append(parent_dir)
 import numpy as np
 import pandas as pd
 from Printting import create_directory, create_workbook, save_to_excel_2d, save_to_excel_1d
@@ -8,7 +15,7 @@ if __name__ == '__main__':
     models = ['MLR', 'SVR', 'KNN', 'GPR']
     for m in models:
         wb = '../Results/OnTrain/DKNCOR/' + m + '.xlsx'
-        for i in range(10):
+        for i in range(1):
             result_index = 'result' + str(i)
             all_data = pd.DataFrame(pd.read_excel(wb, sheet_name=result_index)).values
             indicators = all_data[:, [3, 4, 5]]

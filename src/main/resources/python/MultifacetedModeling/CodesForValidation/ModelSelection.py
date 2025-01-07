@@ -39,8 +39,8 @@ if __name__ == '__main__':
     if len(sys.argv) > 1:
         kernels = ast.literal_eval(sys.argv[1])
         print(kernels)
-    load_data_wb = '../DataInput/data-85.xlsx'
-    load_indices_wb = '../DataInput/data-85-split.xlsx'
+    load_data_wb = '../DataInput/uploadedFile.xlsx'
+    load_indices_wb = '../DataInput/uploadedFile-split.xlsx'
     all_data = load_data(load_data_wb, sheet_name='data')
     train_indices = load_data(load_indices_wb, sheet_name='Train').T
     validation_indices = load_data(load_indices_wb, sheet_name='Validation').T

@@ -1,15 +1,24 @@
+import io
+import ast
+import os
+import sys
+current_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(current_dir)  # 上一层目录
+sys.path.append(parent_dir)
 import numpy as np
 import pandas as pd
 from Printting import save_to_excel_1d
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
-from KernelCal.threshold_analysis3 import binary_code
+from step3_threshold_analysis import binary_code
 
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8')
 # 步骤一：根据特征子集对应机器学习的预测性能指标，对特征决策表进行聚类分组
 
 models = ['MLR', 'SVR', 'KNN', 'GPR']
 for model in models:
-    for i in range(10):
+    for i in range(1):
         result_index = 'result' + str(i)
 
         load_data_wb = '../Results/OnTrain/DKNCOR/' + model + '.xlsx'

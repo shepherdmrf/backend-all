@@ -1,13 +1,21 @@
+import io
+import ast
+import os
+import sys
+current_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(current_dir)  # 上一层目录
+sys.path.append(parent_dir)
 import numpy as np
 import pandas as pd
 from collections import Counter
 from Printting import create_directory, create_workbook, save_to_excel_2d
-
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8')
 # 步骤二：计算特征决策表每个分组中各个特征出现的频率
 
 models = ['MLR', 'SVR', 'KNN', 'GPR']
 for model in models:
-    for i in range(10):
+    for i in range(1):
         result_index = 'result' + str(i)
 
         load_data_wb = '../Results/OnTrain/DKNCOR/' + model + '.xlsx'

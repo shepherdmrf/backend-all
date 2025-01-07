@@ -1,62 +1,58 @@
 package shu.xai.材料.page;
 
 public class PageRequestCopy {
-    private int page;
-    private int pageSize;
-    private String value1;
-    private String value2;
+    private int Page;
+    private int PageSize;
+    private String Value1;
+    private int Split;
+    private int Repeat;
+    private int Iteration;
 
-    public String getValue1() {
-        return value1;
-    }
-
-    public void setValue1(String value1) {
-        this.value1 = value1;
-    }
-
-    public String getValue2() {
-        return value2;
-    }
-
-    public void setValue2(String value2) {
-        this.value2 = value2;
-    }
-
-    // 无参构造函数
-    public PageRequestCopy() {
-    }
-
-    public PageRequestCopy(int page, int pageSize, String value1, String value2) {
-        this.page = page;
-        this.pageSize = pageSize;
-        this.value1 = value1;
-        this.value2 = value2;
-    }
-
-    @Override
-    public String toString() {
-        return "PageRequestCopy{" +
-                "page=" + page +
-                ", pageSize=" + pageSize +
-                ", value1='" + value1 + '\'' +
-                ", value2='" + value2 + '\'' +
-                '}';
-    }
-
-    // Getter 和 Setter 方法
     public int getPage() {
-        return page;
+        return Page;
     }
 
     public void setPage(int page) {
-        this.page = page;
+        Page = page;
     }
 
     public int getPageSize() {
-        return pageSize;
+        return PageSize;
     }
 
     public void setPageSize(int pageSize) {
-        this.pageSize = pageSize;
+        PageSize = pageSize;
+    }
+
+    public String getValue1() {
+        return Value1;
+    }
+
+    public void setValue1(String value1) {
+        Value1 = value1;
+    }
+
+    public int getSplit() {
+        return Split;
+    }
+
+    public void setSplit(int split) {
+        Split = split;
+    }
+
+    public int getRepeat() {
+        return Repeat;
+    }
+
+    public void setRepeat(int repeat) {
+        Repeat = repeat;
+    }
+
+    public int getIteration() {
+        return Iteration;
+    }
+
+    public void setIteration(int iteration) {
+        Iteration = iteration;
     }
 }

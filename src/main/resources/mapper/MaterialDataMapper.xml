@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="shu.xai.dataAnalysis.mapper.MaterialDataMapper">
+
+    <resultMap id="MaterialDataMap" type="shu.xai.dataAnalysis.entity.MaterialData">
+        <result property="BT2" column="BT2"/>
+        <result property="BT1" column="BT1"/>
+    </resultMap>
+
+
+
+
+    <!-- 批量插入数据 -->
+    <insert id="insertMaterialData" parameterType="java.util.List">
+        INSERT INTO data.data2 (
+        Occu_6b, Occu_18e, Occu_36f, C_Na, Occu_M1, Occu_M2, EN_M1, EN_M2, avg_EN_M,
+        Radius_M1, Radius_M2, avg_Radius_M, Valence_M1, Valence_M2, avg_Valence_M,
+        Occu_X1, Occu_X2, EN_X1, EN_X2, avg_EN_X, Radius_X1, Radius_X2, avg_Radius_X,
+        Valence_X1, Valence_X2, avg_Valence_X, a, c, V, V_MO6, V_XO4, V_Na1_O6,
+        V_Na2_O8, V_Na3_O5, BT2, BT1, Min_BT, RT, Entropy_6b, Entropy_18e, Entropy_36f,
+        Entropy_Na, Entropy_M, Entropy_X, T, BVSE_energy_barrier
+        )
+        VALUES
+        <foreach collection="dataList" item="item" separator=",">
+            (
+            #{item.Occu_6b}, #{item.Occu_18e}, #{item.Occu_36f}, #{item.C_Na}, #{item.Occu_M1}, #{item.Occu_M2},
+            #{item.EN_M1}, #{item.EN_M2}, #{item.avg_EN_M}, #{item.Radius_M1}, #{item.Radius_M2}, #{item.avg_Radius_M},
+            #{item.Valence_M1}, #{item.Valence_M2}, #{item.avg_Valence_M}, #{item.Occu_X1}, #{item.Occu_X2},
+            #{item.EN_X1}, #{item.EN_X2}, #{item.avg_EN_X}, #{item.Radius_X1}, #{item.Radius_X2}, #{item.avg_Radius_X},
+            #{item.Valence_X1}, #{item.Valence_X2}, #{item.avg_Valence_X}, #{item.a}, #{item.c}, #{item.V},
+            #{item.V_MO6}, #{item.V_MO6}, #{item.V_Na1_O6}, #{item.V_Na2_O8}, #{item.V_Na3_O5}, #{item.BT2},
+            #{item.BT1}, #{item.Min_BT}, #{item.RT}, #{item.Entropy_6b}, #{item.Entropy_18e}, #{item.Entropy_36f},
+            #{item.Entropy_Na}, #{item.Entropy_M}, #{item.Entropy_X}, #{item.T}, #{item.BVSE_energy_barrier}
+            )
+        </foreach>
+    </insert>
+
+
+</mapper>

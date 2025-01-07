@@ -1,9 +1,18 @@
 import pandas as pd
 import numpy as np
 from sklearn import preprocessing
+import os
+import sys
+
+current_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(current_dir)
+parent_dir = os.path.dirname(parent_dir)
+sys.path.append(parent_dir)
+
 from Printting import create_workbook, save_to_excel_1d
 from ModelsCV import predictors
 import warnings
+import urllib.parse
 warnings.filterwarnings('ignore')
 
 
@@ -15,9 +24,12 @@ def load_data(filename, sheet_name='data'):
 
 # 利用最佳特征团训练模型，以获得支持向量
 if __name__ == '__main__':
-    load_data_wb = '../../DataInput/data_85.xlsx'
-    data = load_data(load_data_wb, sheet_name='data')[:,
-           [0, 7, 11, 13, 19, 22, 25, 26, 28, 30, 31, 35, 36, 37, 39, 44, 45]]
+    load_data_wb = '../../DataInput/data-85.xlsx'
+    features1 = sys.argv[1]
+    features1 = urllib.parse.unquote(features1)
+    print(features1)
+    features1 = [int(item.lstrip('+')) for item in features1.strip('[]').split(',')]
+    data = load_data(load_data_wb, sheet_name='data')[:,features1]
     train_x = data[:, :-1]
     train_y = data[:, -1]
 

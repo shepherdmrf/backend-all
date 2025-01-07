@@ -1,3 +1,10 @@
+import io
+import ast
+import os
+import sys
+current_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(current_dir)  # 上一层目录
+sys.path.append(parent_dir)
 import numpy as np
 import pandas as pd
 import copy
@@ -11,7 +18,7 @@ if __name__ == '__main__':
     # models = ['GPR']
     for model in models:
         all_kernels = []
-        for i in range(10):
+        for i in range(1):
             result_index = 'result' + str(i)
 
             # 获取最优约简阈值

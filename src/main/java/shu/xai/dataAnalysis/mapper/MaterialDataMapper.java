@@ -1,5 +1,6 @@
 package shu.xai.dataAnalysis.mapper;
 
+import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
@@ -11,6 +12,9 @@ import java.util.Map;
 @Mapper
 public interface MaterialDataMapper {
     void insertMaterialData(@Param("dataList") List<MaterialData> dataList);
+
+    @Delete("DELETE FROM data.data2")
+    void clearTable();
 
     String FIELDS = "Occu_6b, Occu_18e, Occu_36f, C_Na,"+
             "Occu_M1, Occu_M2, EN_M1, EN_M2,"+
