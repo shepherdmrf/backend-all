@@ -2,6 +2,7 @@ package shu.xai.dataAnalysis.service.impl;
 
 import org.apache.poi.ss.usermodel.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -22,10 +23,15 @@ public class FileUploadServiceImpl implements FileUploadService {
     @Autowired
     private MaterialDataMapper materialDataMapper;
 
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
     @Transactional
     @Override
     public void processFile(MultipartFile file) throws Exception {
-        List<MaterialData> dataList = new ArrayList<>();
+        // 存储 Excel 表头到字段的映射
+        Map<Integer, String> columnToFieldMap = new HashMap<>();
+        String tableName = "data.data2"; // 动态生成的表名，可以根据需要修改
 
         // 使用 Apache POI 解析 Excel 文件
         try (Workbook workbook = WorkbookFactory.create(file.getInputStream())) {
@@ -34,67 +40,121 @@ public class FileUploadServiceImpl implements FileUploadService {
 
             // 解析表头（第一行）
             Row headerRow = rowIterator.next();
-            Map<Integer, String> columnToFieldMap = new HashMap<>(); // 列与字段映射
+
+            // 动态创建数据库表
+            StringBuilder dropTableSql = new StringBuilder("DROP TABLE IF EXISTS " + tableName);
+            System.out.println("执行 SQL 删除表: " + dropTableSql.toString());
+            jdbcTemplate.execute(dropTableSql.toString()); // 执行删除表的 SQL
+
+            StringBuilder createTableSql = new StringBuilder("CREATE TABLE IF NOT EXISTS " + tableName + " (");
 
             for (int i = 0; i < headerRow.getLastCellNum(); i++) {
                 Cell cell = headerRow.getCell(i);
                 if (cell != null) {
                     String columnName = cell.getStringCellValue().trim();
-                    columnToFieldMap.put(i, convertToFieldName(columnName));
+                    System.out.println("原始列名: " + columnName); // 打印原始列名
+                    String fieldName = convertToFieldName(columnName);
+                    System.out.println("转换后的字段名（驼峰格式）: " + fieldName); // 打印转换后的字段名
+
+                    // 处理特殊字段名
+                    fieldName = handleSpecialFieldNames(fieldName);
+                    System.out.println("最终字段名（处理特殊情况后）: " + fieldName); // 打印最终字段名
+
+                    columnToFieldMap.put(i, fieldName);
+
+                    // 根据字段名生成 SQL，假设所有字段为 VARCHAR 类型（可以根据需求进一步改进）
+                    createTableSql.append(fieldName).append(" VARCHAR(255), ");
                 }
             }
 
-            // 解析数据行
+            createTableSql.setLength(createTableSql.length() - 2);
+            createTableSql.append(")");
+
+            System.out.println("生成的 CREATE TABLE SQL: " + createTableSql.toString());
+
+            jdbcTemplate.execute(createTableSql.toString());
+
+            // 解析数据行并插入数据
             while (rowIterator.hasNext()) {
                 Row row = rowIterator.next();
-                MaterialData data = new MaterialData();
+                List<Object> values = new ArrayList<>();
 
                 for (Map.Entry<Integer, String> entry : columnToFieldMap.entrySet()) {
                     int columnIndex = entry.getKey();
                     String fieldName = entry.getValue();
 
-                    if ("V_Na(1)O6".equals(fieldName)) {
-                        fieldName = "V_Na1_O6";
-                    } else if ("V_Na(2)O8".equals(fieldName)) {
-                        fieldName = "V_Na2_O8";
-                    } else if ("V_Na(3)O5".equals(fieldName)) {
-                        fieldName = "V_Na3_O5";
-                    }
+                    // 字段名特殊处理，避免字段名和实际类属性不一致
+                    fieldName = handleSpecialFieldNames(fieldName);
 
+                    // 获取单元格值
                     Double value = getCellValueAsDouble(row, columnIndex);
                     if (value != null) {
-                        String setterName = "set" + Character.toUpperCase(fieldName.charAt(0)) + fieldName.substring(1);
-                        try {
-                            Method setter = MaterialData.class.getDeclaredMethod(setterName, Double.class);
-                            setter.invoke(data, value);
-                        } catch (NoSuchMethodException e) {
-                            System.out.println("字段 " + fieldName + " 没有对应的 setter 方法");
-                        }
+                        values.add(value); // 将数据添加到 values 列表中
+                    } else {
+                        values.add(null); // 对应列为空时，插入 NULL
                     }
                 }
 
-                dataList.add(data); // 添加到数据列表
+                // 插入数据到数据库
+                insertDataIntoTable(tableName, columnToFieldMap, values);
             }
         }
-
-        materialDataMapper.clearTable();
-
-        // 调用 Mapper 批量插入数据
-        materialDataMapper.insertMaterialData(dataList);
     }
 
-    /**
-     * 工具方法：获取单元格的 Double 值
-     */
-    private Double getCellValueAsDouble(Row row, int columnIndex) {
-        Cell cell = row.getCell(columnIndex, Row.MissingCellPolicy.RETURN_BLANK_AS_NULL);
-        if (cell == null) {
-            return null; // 返回 null 表示单元格为空
+    // 插入数据到动态创建的表
+    private void insertDataIntoTable(String tableName, Map<Integer, String> columnToFieldMap, List<Object> values) {
+        StringBuilder insertSql = new StringBuilder("INSERT INTO " + tableName + " (");
+        StringBuilder valueSql = new StringBuilder("VALUES (");
+
+        // 动态构建字段名和插入的值
+        for (String field : columnToFieldMap.values()) {
+            insertSql.append(field).append(", ");
+            valueSql.append("?, ");
         }
-        try {
-            return cell.getNumericCellValue(); // 返回数值类型
-        } catch (IllegalStateException e) {
-            return null; // 非数值类型返回 null
+
+        // 去掉最后的逗号
+        insertSql.setLength(insertSql.length() - 2);
+        valueSql.setLength(valueSql.length() - 2);
+
+        insertSql.append(") ").append(valueSql).append(")");
+
+        // 使用 jdbcTemplate 执行插入操作
+        jdbcTemplate.update(insertSql.toString(), values.toArray());
+    }
+
+    // 处理特殊字段名转换
+    private String handleSpecialFieldNames(String fieldName) {
+        switch (fieldName) {
+            case "V_Na(1)O6":
+                return "V_Na1_O6";
+            case "V_Na(2)O8":
+                return "V_Na2_O8";
+            case "V_Na(3)O5":
+                return "V_Na3_O5";
+            default:
+                return fieldName;
+        }
+    }
+
+    // 获取单元格值并转换为 Double
+    private Double getCellValueAsDouble(Row row, int columnIndex) {
+        Cell cell = row.getCell(columnIndex);
+        if (cell == null) {
+            return null;
+        }
+
+        switch (cell.getCellType()) {
+            case NUMERIC:
+                return cell.getNumericCellValue();
+            case STRING:
+                try {
+                    return Double.parseDouble(cell.getStringCellValue().trim());
+                } catch (NumberFormatException e) {
+                    System.out.println("无法将字符串转换为数字: " + cell.getStringCellValue());
+                    return null;
+                }
+            default:
+                return null;
         }
     }
 

@@ -209,7 +209,7 @@ public class CallPythonScript {
     public static void CallFeatureVenn(String features1, String jsonFeatures2, String features3){
         try {
             // 设置 Python 可执行文件路径和脚本路径
-            String pythonPath = "python.exe";
+            String pythonPath = "python.exe"; // 这里假设 python 已添加到系统环境变量中
             String scriptPath = "./FeatureVenn.py";
 
             String encodedFeatures1 = URLEncoder.encode(features1, "UTF-8");
@@ -310,6 +310,45 @@ public class CallPythonScript {
             env.put("PATH", systemPath);
 //            processBuilder.directory(new java.io.File("./src/main/resources/python/MultifacetedModeling/RuleExtraction/SVR"));
             processBuilder.directory(new java.io.File("./src/main/resources/python/MultifacetedModeling/RuleExtraction/SVR"));
+
+            // 启动进程
+            Process process = processBuilder.start();
+
+            // 获取输出
+            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            String line;
+            while ((line = reader.readLine()) != null) {
+                System.out.println(line); // 输出 Python 执行的日志
+            }
+
+            // 读取错误输出
+            BufferedReader errorReader = new BufferedReader(new InputStreamReader(process.getErrorStream(), StandardCharsets.UTF_8));
+            while ((line = errorReader.readLine()) != null) {
+                System.err.println("Error: " + line);
+            }
+
+            // 等待脚本执行完毕
+            int exitCode = process.waitFor();
+            System.out.println("Python script exited with code: " + exitCode);
+
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void CallViolin(){
+        try {
+            // 设置 Python 可执行文件路径和脚本路径
+            String pythonPath = "python.exe"; // 这里假设 python 已添加到系统环境变量中
+            String scriptPath = "./Violin.py";
+
+            // 构造 Python 命令，传递参数给脚本
+            ProcessBuilder processBuilder = new ProcessBuilder(pythonPath, scriptPath);
+
+            String systemPath = System.getenv("PATH");
+            Map<String, String> env = processBuilder.environment();
+            env.put("PATH", systemPath);
+            processBuilder.directory(new java.io.File("./src/main/resources/python/MultifacetedModeling"));
 
             // 启动进程
             Process process = processBuilder.start();

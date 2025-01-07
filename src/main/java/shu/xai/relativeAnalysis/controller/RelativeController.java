@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import shu.xai.characteristicClusterConstruction.entity.Feature;
+import shu.xai.characteristicClusterConstruction.entity.KeyKnowledgeFeature;
 import shu.xai.relativeAnalysis.service.RelativeService;
 
 import java.io.ByteArrayInputStream;
@@ -31,7 +32,7 @@ public class RelativeController {
     private RelativeService relativeService;
 
     @GetMapping("/svr")
-    public List<Feature> getSVRCluster() {
+    public List<KeyKnowledgeFeature> getSVRCluster() {
         return relativeService.getSVRCluster();
     }
 

@@ -2,7 +2,7 @@ package shu.xai.relativeAnalysis.mapper;
 
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
-import shu.xai.characteristicClusterConstruction.entity.Feature;
+import shu.xai.characteristicClusterConstruction.entity.KeyKnowledgeFeature;
 
 import java.util.List;
 
@@ -10,7 +10,7 @@ import java.util.List;
 public interface RelativeMapper {
 
     @Select("SELECT id, Features FROM data_table.bestsvr")
-    List<Feature> getSVRCluster();
+    List<KeyKnowledgeFeature> getSVRCluster();
 
     @Select("SELECT Features FROM data_table.bestsvr WHERE id = #{id}")
     String findSVRById(int id);

@@ -25,7 +25,7 @@ public class RelativeServiceImpl implements RelativeService {
     private RelativeMapper relativeMapper;
 
     @Override
-    public List<Feature> getSVRCluster() {
+    public List<KeyKnowledgeFeature> getSVRCluster() {
         return relativeMapper.getSVRCluster();
     }
 

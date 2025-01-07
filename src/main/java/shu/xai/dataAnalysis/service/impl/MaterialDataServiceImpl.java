@@ -1,14 +1,21 @@
 package shu.xai.dataAnalysis.service.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import shu.xai.characteristicClusterConstruction.entity.Feature;
+import shu.xai.characteristicClusterConstruction.entity.KeyKnowledgeFeature;
 import shu.xai.dataAnalysis.entity.MaterialData;
 import shu.xai.dataAnalysis.entity.PageResult;
 import shu.xai.dataAnalysis.mapper.MaterialDataMapper;
 import shu.xai.dataAnalysis.service.MaterialDataService;
+import shu.xai.材料.service.CallPython.CallPythonScript;
 
 
 import javax.annotation.Resource;
+import java.io.File;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -20,6 +27,9 @@ public class MaterialDataServiceImpl implements MaterialDataService {
 
     @Resource
     private MaterialDataMapper materialDataMapper;
+
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
 
     private static final List<String> VALID_ATTRIBUTES = Arrays.asList(
             "Occu_6b", "Occu_18e", "Occu_36f", "C_Na",
@@ -38,13 +48,17 @@ public class MaterialDataServiceImpl implements MaterialDataService {
     );
 
     @Override
-    public PageResult<MaterialData> getPaginatedData(int page, int size) {
+    public PageResult<Map<String, Object>> getPaginatedData(int page, int size) {
         // 计算分页偏移量
         int offset = (page - 1) * size;
 
-        // 获取分页数据和总记录数
-        List<MaterialData> dataList = materialDataMapper.getPaginatedData(offset, size);
-        int totalCount = materialDataMapper.getTotalCount();
+        // 查询分页数据
+        String sql = "SELECT * FROM data.data2 LIMIT ? OFFSET ?";
+        List<Map<String, Object>> dataList = jdbcTemplate.queryForList(sql, size, offset);
+
+        // 获取总记录数
+        String countSql = "SELECT COUNT(*) FROM data.data2";
+        int totalCount = jdbcTemplate.queryForObject(countSql, Integer.class);
 
         // 返回分页结果
         return new PageResult<>(dataList, totalCount);
@@ -133,6 +147,30 @@ public class MaterialDataServiceImpl implements MaterialDataService {
         return statistics;
     }
 
+    @Override
+    public File generateViolin() {
+        try {
+            // 调用 Python 脚本
+            CallPythonScript.CallViolin();
+
+            // 假设 Python 脚本生成的图片文件路径如下
+            String imagePath = "./src/main/resources/python/MultifacetedModeling/violin.png";
+
+            // 检查生成的文件是否存在
+            File generatedImage = new File(imagePath);
+            if (!generatedImage.exists()) {
+                throw new RuntimeException("Python script did not generate the image.");
+            }
+
+            // 返回生成的图片文件
+            return generatedImage;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("An error occurred while generating the Violin", e);
+        }
+    }
+
     public Map<String, Integer> getAttributeCounts() {
         // 获取数据库表的元数据
         List<String> columnNames = materialDataMapper.getColumnNames();
@@ -165,6 +203,5 @@ public class MaterialDataServiceImpl implements MaterialDataService {
         return false;
     }
 }
-
 
 
