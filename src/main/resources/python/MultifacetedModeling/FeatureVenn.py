@@ -1,13 +1,13 @@
 import pandas as pd
-from matplotlib.patches import Ellipse
-from matplotlib_venn import venn2
+from matplotlib.patches import Circle, Ellipse
 import matplotlib.pyplot as plt
 import sys
 import urllib.parse
 import json
 import re
+import numpy as np
+import random
 
-# 定义编号与内容的映射（0-37）
 feature_map = {
     0: "Occu_6b", 1: "Occu_18e", 2: "Occu_36f", 3: "C_Na", 4: "Occu_M1", 5: "Occu_M2",
     6: "EN_M1", 7: "EN_M2", 8: "avg_EN_M", 9: "Radius_M1", 10: "Radius_M2",
@@ -20,17 +20,6 @@ feature_map = {
     40: "Entropy_36f", 41: "Entropy_Na", 42: "Entropy_M", 43: "Entropy_X", 44: "T"
 }
 
-# 接收参数
-kernel1 = sys.argv[1]
-kernel2 = sys.argv[2]
-kernel3 = sys.argv[3]
-
-# 解码 URL 参数
-kernel1 = urllib.parse.unquote(kernel1)
-kernel2 = urllib.parse.unquote(kernel2)
-kernel3 = urllib.parse.unquote(kernel3)
-
-# 将字符串或 JSON 转换为集合
 def parse_to_set(data):
     if isinstance(data, str):
         try:
@@ -49,23 +38,19 @@ def parse_to_set(data):
         raise ValueError("Unsupported data format")
     return set(map(int, numbers))
 
-kernel1 = parse_to_set(kernel1)
-kernel2 = parse_to_set(kernel2)
-kernel3 = parse_to_set(kernel3)
+kernel1 = parse_to_set(urllib.parse.unquote(sys.argv[1]))
+kernel2 = parse_to_set(urllib.parse.unquote(sys.argv[2]))
+kernel3 = parse_to_set(urllib.parse.unquote(sys.argv[3]))
 
-# 计算交集
 kernel4 = kernel1 | kernel2
 
-# 创建特征表格
 def create_feature_table(kernel3, kernel4, feature_map):
     data = []
     for key, value in feature_map.items():
-        if key in kernel3 and key in kernel4:
-            category, color = "Intersection", "#FFA07A"  # 黄色
+        if key in kernel4:
+            category, color = "Kernel4 (Intersection)", "#FFA07A"
         elif key in kernel3:
-            category, color = "Kernel3 Only", "#FFDAB9"  # 绿色
-        elif key in kernel4:
-            category, color = "Kernel4 Only", "#FA8072"  # 蓝色
+            category, color = "Kernel3 Only", "#87CEEB"
         else:
             continue
         data.append({"Feature ID": key, "Feature Name": value, "Category": category, "Color": color})
@@ -73,81 +58,64 @@ def create_feature_table(kernel3, kernel4, feature_map):
 
 feature_table = create_feature_table(kernel3, kernel4, feature_map)
 
-fig, axes = plt.subplots(
-    1, 2, figsize=(15, 7),
-    gridspec_kw={'width_ratios': [1.75, 1]}
-)
+fig, axes = plt.subplots(1, 2, figsize=(15, 7), gridspec_kw={'width_ratios': [1.75, 1]})
 
-venn = venn2([kernel3, kernel4], set_labels=("", ""), ax=axes[0])
+theta = np.linspace(0, 2 * np.pi, 500)
+x = np.cos(theta) * 1.4
+y = np.sin(theta) * 1.4
+axes[0].fill_between(x, 0, y, where=(y > 0), color="#87CEEB", alpha=0.9)
+axes[0].fill_between(x, 0, y, where=(y < 0), color="#87CEEB", alpha=0.9)
+ellipse = Ellipse((0, 0), width=2.8, height=0.6*1.4, edgecolor="black", facecolor="#FFA07A", alpha=1)
+axes[0].add_patch(ellipse)
 
-colors = {
-    '10': "#FFA07A",
-    '01': "#FFDAB9",
-    '11': "#FA8072",
-}
+kernel4_features = sorted(kernel4)
+kernel4_text = "     ".join(map(str, kernel4_features))
+axes[0].text(0, 0, kernel4_text, fontsize=18, ha="center", va="center", color="black")
 
-for subset_label in venn.subset_labels:
-    if subset_label and subset_label.get_text() == "0":
-        subset_label.set_visible(False)
+kernel3_only_features = sorted(kernel3 - kernel4)
+num_features = len(kernel3_only_features)
+num_rows_per_region = 2
+col_spacing = 0.4
+row_spacing = 0.3
 
-# 替换圆形为椭圆
-max_width = 2.0  # 设置椭圆的最大宽度
-max_height = 1.0  # 设置椭圆的最大高度
+has_extra = num_features % 2 != 0
+num_main_features = num_features - 1 if has_extra else num_features
+num_cols = (num_main_features // 2 + num_rows_per_region - 1) // num_rows_per_region
 
-for subset, color in colors.items():
-    patch = venn.get_patch_by_id(subset)
-    if patch:
-        path = patch.get_path()
-        vertices = path.vertices
-        center = vertices.mean(axis=0)  # 中心点
-        center[0] -= 0.175
-        radius_x = (vertices[:, 0].max() - vertices[:, 0].min()) / 2
-        radius_y = (vertices[:, 1].max() - vertices[:, 1].min()) / 2
+upper_features = kernel3_only_features[:num_main_features // 2]
+for i, feature in enumerate(upper_features):
+    row = i // num_cols
+    col = i % num_cols
+    total_width = (num_cols - 1) * col_spacing
+    x_pos = -total_width / 2 + col * col_spacing
+    y_pos = 0.9 - row * row_spacing
+    axes[0].text(x_pos, y_pos, str(feature), fontsize=18, ha="center", va="center", color="black")
 
-        # 限制椭圆的宽度和高度
-        adjusted_width = min(1.5 * radius_x * 1.5, max_width)
-        adjusted_height = min(1.75 * radius_y * 0.8, max_height)
+lower_features = kernel3_only_features[num_main_features // 2:num_main_features]
+for i, feature in enumerate(lower_features):
+    row = i // num_cols
+    col = i % num_cols
+    total_width = (num_cols - 1) * col_spacing
+    x_pos = -total_width / 2 + col * col_spacing
+    y_pos = -0.9 + row * row_spacing
+    axes[0].text(x_pos, y_pos, str(feature), fontsize=18, ha="center", va="center", color="black")
 
-        patch.remove()  # 移除圆形
-        ellipse = Ellipse(
-            xy=center,
-            width=adjusted_width,  # 使用限制后的宽度
-            height=adjusted_height,  # 使用限制后的高度
-            color=color,
-            alpha=0.7
-        )
-        axes[0].add_patch(ellipse)
+if has_extra:
+    extra_feature = kernel3_only_features[-1]
+    axes[0].text(0, -1.2, str(extra_feature), fontsize=18, ha="center", va="center", color="black")
 
+axes[0].set_aspect('equal', adjustable='box')
+axes[0].set_xlim(-1.5, 1.5)
+axes[0].set_ylim(-1.5, 1.5)
+axes[0].axis("off")
 
 axes[0].set_title(
     "Venn Diagram of the relationship between\n"
     "the combined kernel features and the optimal feature clusters",
     fontsize=14,
-    fontweight="bold",
-    pad=0  # 适当调整标题与图之间的距离
+    fontweight="bold"
 )
 
-axes[0].title.set_y(1)
-
-for subset_label in venn.subset_labels:
-    if subset_label:  # 确保标签存在
-        subset_label.set_fontsize(14)  # 设置字体大小
-        subset_label.set_fontweight('bold')  # 可选：加粗数字
-
-for subset, subset_label in zip(('10', '01', '11'), venn.subset_labels):
-    if subset_label:
-        if subset == '10':
-            subset_label.set_x(subset_label.get_position()[0] - 0.1)
-            subset_label.set_y(subset_label.get_position()[1] )
-        elif subset == '01':
-            subset_label.set_x(subset_label.get_position()[0] + 0.2)
-            subset_label.set_y(subset_label.get_position()[1] - 0.1)
-        elif subset == '11':
-            subset_label.set_x(subset_label.get_position()[0] - 0.15)
-            subset_label.set_y(subset_label.get_position()[1])
-
-
-# 绘制表格
 axes[1].axis("off")
 table_data = feature_table[["Feature ID", "Feature Name"]]
 table = axes[1].table(
@@ -158,28 +126,24 @@ table = axes[1].table(
     colLoc="center"
 )
 
-# 根据分类为行着色
 for i, key in enumerate(table_data.index):
     category = feature_table.loc[key, "Category"]
     color = feature_table.loc[key, "Color"]
     for j in range(len(table_data.columns)):
         table[(i + 1, j)].set_facecolor(color)
 
-# 调整表格样式
 table.auto_set_font_size(False)
 table.set_fontsize(15)
 table.auto_set_column_width(col=list(range(len(table_data.columns))))
 
 for (row, col), cell in table.get_celld().items():
-    if row == 0:  # 表头单元格
-        cell.set_fontsize(12)  # 调整表头字体大小
-        cell.set_height(0.05)  # 设置表头单元格高度
-        cell.set_text_props(weight='bold')  # 加粗表头
-    else:  # 数据单元格
-        cell.set_fontsize(10)  # 调整数据单元格字体大小
-        cell.set_height(0.04)  # 设置数据单元格高度
+    if row == 0:
+        cell.set_fontsize(12)
+        cell.set_height(0.05)
+        cell.set_text_props(weight='bold')
+    else:
+        cell.set_fontsize(10)
+        cell.set_height(0.04)
 
-plt.subplots_adjust(wspace=0)  # 调整子图间距
-
-# 保存图片
+plt.subplots_adjust(wspace=0)
 plt.savefig("venn_diagram.png", dpi=200, bbox_inches="tight")
