@@ -376,7 +376,8 @@ public class PlatformServiceImpl implements PlatformService {
 
     @Override
     public JSONObject DrawMlrPicture(String userId, String roleId) {
-        JSONArray result = new JSONArray();
+        JSONArray result1 = new JSONArray();
+        JSONArray result2 = new JSONArray();
         JSONObject response = new JSONObject();
         if (roleId.equals(RoleCodeEnums.KAIFA.getCode()) || roleId.equals(RoleCodeEnums.IN_MAMAGE.getCode())) {
             String s="";
@@ -399,13 +400,22 @@ public class PlatformServiceImpl implements PlatformService {
             list.add(s);
             CallPythonScript.call(script,work,list);
             try{
-                excelSqlSolve.RuleClear("MLR");
+                excelSqlSolve.RuleClear("MLR1");
+                excelSqlSolve.RuleClear("MLR2");
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            String sql="INSERT INTO `MLR` (`No.`, `Name`, `Importance`, `PCC`) VALUES (?, ?, ?, ?)";
+            String sql="INSERT INTO `MLR1` (`No.`, `Name`, `Importance`, `PCC`) VALUES (?, ?, ?, ?)";
             String excelFile="./src/main/resources/python/MultifacetedModeling/RuleExtraction/MLR/training_result.xlsx";
             String sheetname="all";
+            try{
+                excelSqlSolve.RuleinsertExcelDataToSQL(excelFile,sql,sheetname);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            sql="INSERT INTO `MLR2` (`No.`, `Name`, `Importance`, `PCC`) VALUES (?, ?, ?, ?)";
+            excelFile="./src/main/resources/python/MultifacetedModeling/RuleExtraction/MLR/training_result.xlsx";
+            sheetname="all_pos";
             try{
                 excelSqlSolve.RuleinsertExcelDataToSQL(excelFile,sql,sheetname);
             } catch (Exception e) {
@@ -414,15 +424,28 @@ public class PlatformServiceImpl implements PlatformService {
             try {
                 List<Map<String, Object>> searchResult;
                 // 确保 SQL 语句中的空格
-                sql = "SELECT Name , Importance , PCC FROM MLR";
+                sql = "SELECT Name , Importance , PCC FROM MLR1";
                 searchResult = jdbcTemplateRule.queryForList(sql);
                 for (Map<String, Object> row : searchResult) {
-                    result.add(new JSONObject(row));
+                    result1.add(new JSONObject(row));
                 }
             } catch (DataAccessException e) {
                 e.printStackTrace();
             }
-            response.put("list",result);
+            response.put("list1",result1);
+
+            try {
+                List<Map<String, Object>> searchResult;
+                // 确保 SQL 语句中的空格
+                sql = "SELECT Name , Importance , PCC FROM MLR2";
+                searchResult = jdbcTemplateRule.queryForList(sql);
+                for (Map<String, Object> row : searchResult) {
+                    result2.add(new JSONObject(row));
+                }
+            } catch (DataAccessException e) {
+                e.printStackTrace();
+            }
+            response.put("list2",result2);
         }
         System.out.println(response);
         return response;
