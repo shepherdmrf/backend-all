@@ -340,6 +340,61 @@ public class ExcelSqlSolve {
         // 返回生成的 INSERT SQL 语句
         return insertSQL;
     }
-}
+        public void RuleinsertExcelDataToSQL(String excelFilePath, String insertSQL, String sheetName, List<Integer> selectedColumns,int startrow) throws Exception {
+            try (FileInputStream file = new FileInputStream(excelFilePath);
+                 Workbook workbook = new XSSFWorkbook(file)) {
+
+                // 获取指定的 Sheet
+                Sheet sheet = workbook.getSheet(sheetName);
+                if (sheet == null) {
+                    System.out.println("指定的工作表 " + sheetName + " 不存在！");
+                    return;
+                }
+
+                // 遍历 Excel 行
+                for (int i = startrow; i < sheet.getPhysicalNumberOfRows(); i++) { // 跳过表头，从第二行开始
+                    Row row = sheet.getRow(i);
+                    if (row != null) {
+                        jdbcTemplateRule.update(connection -> {
+                            PreparedStatement pstmt = connection.prepareStatement(insertSQL);
+                            int columnIndex = 1; // PreparedStatement 索引从 1 开始
+
+                            // **只处理 selectedColumns 指定的列**
+                            for (int col : selectedColumns) {
+                                Cell cell = row.getCell(col, Row.MissingCellPolicy.RETURN_BLANK_AS_NULL);
+                                if (cell == null) {
+                                    pstmt.setNull(columnIndex++, Types.NULL);
+                                } else {
+                                    switch (cell.getCellType()) {
+                                        case STRING:
+                                            pstmt.setString(columnIndex++, cell.getStringCellValue().trim());
+                                            break;
+                                        case NUMERIC:
+                                            if (DateUtil.isCellDateFormatted(cell)) {
+                                                pstmt.setDate(columnIndex++, new java.sql.Date(cell.getDateCellValue().getTime()));
+                                            } else {
+                                                pstmt.setDouble(columnIndex++, cell.getNumericCellValue());
+                                            }
+                                            break;
+                                        case BOOLEAN:
+                                            pstmt.setBoolean(columnIndex++, cell.getBooleanCellValue());
+                                            break;
+                                        default:
+                                            pstmt.setNull(columnIndex++, Types.NULL);
+                                            break;
+                                    }
+                                }
+                            }
+                            return pstmt;
+                        });
+                    }
+                }
+                System.out.println("数据已成功插入到数据库！");
+            } catch (Exception e) {
+                System.err.println("导入数据时发生错误：" + e.getMessage());
+                e.printStackTrace();
+            }
+        }
+    }
 
 
