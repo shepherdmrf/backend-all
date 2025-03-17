@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONArray;
 
 import com.alibaba.fastjson.JSONObject;
 import com.sun.org.apache.bcel.internal.generic.NEW;
+import org.apache.ibatis.jdbc.Null;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Service;
 import shu.xai.characteristicClusterConstruction.entity.Feature;
 import shu.xai.sys.enums.RoleCodeEnums;
 import shu.xai.材料.ExcelSolve.ExcelSqlSolve;
+import shu.xai.材料.page.treeNode;
 import shu.xai.材料.service.CallPython.CallPythonScript;
 import shu.xai.材料.service.PlatformService;
 import javax.annotation.Resource;
@@ -376,7 +378,8 @@ public class PlatformServiceImpl implements PlatformService {
 
     @Override
     public JSONObject DrawMlrPicture(String userId, String roleId) {
-        JSONArray result = new JSONArray();
+        JSONArray result1 = new JSONArray();
+        JSONArray result2 = new JSONArray();
         JSONObject response = new JSONObject();
         if (roleId.equals(RoleCodeEnums.KAIFA.getCode()) || roleId.equals(RoleCodeEnums.IN_MAMAGE.getCode())) {
             String s="";
@@ -399,13 +402,22 @@ public class PlatformServiceImpl implements PlatformService {
             list.add(s);
             CallPythonScript.call(script,work,list);
             try{
-                excelSqlSolve.RuleClear("MLR");
+                excelSqlSolve.RuleClear("MLR1");
+                excelSqlSolve.RuleClear("MLR2");
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            String sql="INSERT INTO `MLR` (`No.`, `Name`, `Importance`, `PCC`) VALUES (?, ?, ?, ?)";
+            String sql="INSERT INTO `MLR1` (`No.`, `Name`, `Importance`, `PCC`) VALUES (?, ?, ?, ?)";
             String excelFile="./src/main/resources/python/MultifacetedModeling/RuleExtraction/MLR/training_result.xlsx";
             String sheetname="all";
+            try{
+                excelSqlSolve.RuleinsertExcelDataToSQL(excelFile,sql,sheetname);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            sql="INSERT INTO `MLR2` (`No.`, `Name`, `Importance`, `PCC`) VALUES (?, ?, ?, ?)";
+            excelFile="./src/main/resources/python/MultifacetedModeling/RuleExtraction/MLR/training_result.xlsx";
+            sheetname="all_pos";
             try{
                 excelSqlSolve.RuleinsertExcelDataToSQL(excelFile,sql,sheetname);
             } catch (Exception e) {
@@ -414,18 +426,201 @@ public class PlatformServiceImpl implements PlatformService {
             try {
                 List<Map<String, Object>> searchResult;
                 // 确保 SQL 语句中的空格
-                sql = "SELECT Name , Importance , PCC FROM MLR";
+                sql = "SELECT Name , Importance , PCC FROM MLR1";
                 searchResult = jdbcTemplateRule.queryForList(sql);
                 for (Map<String, Object> row : searchResult) {
-                    result.add(new JSONObject(row));
+                    result1.add(new JSONObject(row));
                 }
             } catch (DataAccessException e) {
                 e.printStackTrace();
             }
-            response.put("list",result);
+            response.put("list1",result1);
+
+            try {
+                List<Map<String, Object>> searchResult;
+                // 确保 SQL 语句中的空格
+                sql = "SELECT Name , Importance , PCC FROM MLR2";
+                searchResult = jdbcTemplateRule.queryForList(sql);
+                for (Map<String, Object> row : searchResult) {
+                    result2.add(new JSONObject(row));
+                }
+            } catch (DataAccessException e) {
+                e.printStackTrace();
+            }
+            response.put("list2",result2);
         }
         System.out.println(response);
         return response;
+    }
+
+    public boolean search(treeNode root,Integer target)
+    {
+        Queue<treeNode> queue=new LinkedList<>();
+        queue.add(root);
+        while (!queue.isEmpty()){
+          treeNode temp=queue.poll();
+            if (temp.isLeaf() && target.equals(temp.getValue()))
+              return true;
+          else {
+              if (temp.getLeft()!=null)
+                  queue.add(temp.getLeft());
+              if(temp.getRight()!=null)
+                  queue.add(temp.getRight());
+          }
+        }
+        return false;
+    }
+
+    @Override
+    public JSONObject DrawKnnPicture(String userId, String roleId) {
+        String excelFile="./src/main/resources/python/MultifacetedModeling/RuleExtraction/KNN/data_cluster.xlsx";
+        String Sheetname="data";
+        String sql="INSERT INTO `knn_data` (`formula`) VALUES (?)";
+        List<Integer> columnsToRead = Arrays.asList(2);
+        try{
+            excelSqlSolve.RuleClear("knn_data");
+            excelSqlSolve.RuleinsertExcelDataToSQL(excelFile,sql,Sheetname,columnsToRead,2);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        List<Map<String, Object>> formula;
+        sql = "SELECT formula FROM knn_data";
+        formula = jdbcTemplateRule.queryForList(sql);
+        ArrayList<String> formula_name= new ArrayList<>();;
+        for (Map<String, Object> row : formula) {
+            formula_name.add(String.valueOf(row.get("formula")));
+        }
+        String work="./src/main/resources/python/MultifacetedModeling/RuleExtraction/KNN";
+        String script="./visualization.py";
+        CallPythonScript.call(script,work);
+
+        excelFile="./src/main/resources/python/MultifacetedModeling/RuleExtraction/KNN/clustering_data_tree.xlsx";
+        Sheetname="Hierarchical Clustering Tree";
+        sql="INSERT INTO `knn_tree` (`element1`,`element2`,`distance`) VALUES (?,?,?)";
+        try{
+            excelSqlSolve.RuleClear("knn_tree");
+            excelSqlSolve.RuleinsertExcelDataToSQL(excelFile,sql,Sheetname);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        Set<Integer>nodes=new HashSet<>();
+        List<Map<String, Object>> relation;
+        ArrayList<treeNode> tree=new ArrayList<>();
+        ArrayList<JSONObject> treeNodeRelation= new ArrayList<>();;
+        sql = "SELECT DISTINCT element1, element2, distance FROM knn_tree";
+        relation=jdbcTemplateRule.queryForList(sql);
+
+        for (Map<String, Object> row : relation) {
+            treeNodeRelation.add(new JSONObject(row));
+        }
+        try {
+            for (int i=0;i<treeNodeRelation.size();i++)
+            {
+
+                Integer element1=(Integer) treeNodeRelation.get(i).get("element1");
+                Integer element2=(Integer) treeNodeRelation.get(i).get("element2");
+                boolean left=nodes.contains(element1);
+                boolean right=nodes.contains(element2);
+                if(left&&right)
+                {
+                    int j=0;
+                    for (j=0;j<tree.size();j++){
+                        if(search(tree.get(j),element1))
+                        {
+                            break;
+                        }
+                    }
+                    treeNode tree_left=tree.get(j);
+                    tree.remove(j);
+                    for (j=0;j<tree.size();j++){
+                        if(search(tree.get(j),element2))
+                        {
+                            break;
+                        }
+                    }
+                    treeNode tree_right=tree.get(j);
+                    tree.remove(j);
+                    tree.add(new treeNode(tree_left,tree_right,false));
+                }
+                else if (!left&&!right)
+                {
+                    nodes.add(element1);
+                    nodes.add(element2);
+                    treeNode tree_left=new treeNode(null,null,true,element1);
+                    treeNode tree_right=new treeNode(null,null,true,element2);
+                    tree.add(new treeNode(tree_left,tree_right,false));
+                }
+                else if(left)
+                {
+                    int j=0;
+                    for (j=0;j<tree.size();j++){
+                        if(search(tree.get(j),element1))
+                        {
+                            break;
+                        }
+                    }
+                    treeNode tree_left=tree.get(j);
+                    tree.remove(j);
+                    treeNode tree_right=new treeNode(null,null,true,element2);
+                    nodes.add(element2);
+                    tree.add(new treeNode(tree_left,tree_right,false));
+                }
+                else if(right)
+                {
+                    int j=0;
+                    for (j=0;j<tree.size();j++){
+                        if(search(tree.get(j),element2))
+                        {
+                            break;
+                        }
+                    }
+                    treeNode tree_left=new treeNode(null,null,true,element1);
+                    treeNode tree_right=tree.get(j);
+                    tree.remove(j);
+                    nodes.add(element1);
+                    tree.add(new treeNode(tree_left,tree_right,false));
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        JSONObject result=new JSONObject();
+        JSONArray treeList=new JSONArray();
+        treeNode root=tree.get(tree.size()-1);
+        Queue<treeNode>queue=new LinkedList<>();
+        Queue<Integer>parentQueue=new LinkedList<>();
+        queue.add(root);
+        parentQueue.add(-1);
+        Integer id=1;
+        while(!queue.isEmpty())
+        {
+            treeNode temp=queue.poll();
+            Integer parentId=parentQueue.poll();
+            JSONObject node=new JSONObject();
+            node.put("id",id);
+            node.put("parentId",parentId);
+
+            if(temp.isLeaf()==true) {
+                node.put("formula",formula_name.get(temp.getValue()));
+                node.put("value",temp.getValue());
+            }
+            else
+                node.put("value",-1);
+            treeList.add(node);
+            if(temp.getLeft()!=null)
+            {
+                queue.add(temp.getLeft());
+                parentQueue.add(id);
+            }
+            if(temp.getRight()!=null)
+            {
+                queue.add(temp.getRight());
+                parentQueue.add(id);
+            }
+            id++;
+        }
+        result.put("list",treeList);
+        return result;
     }
 }
 

@@ -234,6 +234,21 @@ public class PlatformController {
         }
         return result;
     }
+    @RequestMapping("/getKnnPicture")
+    public String KnnPicture(HttpServletRequest request) {
+        String result="";
+        try{
+            String userId= String.valueOf(request.getSession().getAttribute("userId"));
+            String roleId= String.valueOf(request.getSession().getAttribute("roleId"));
+            JSONObject paramsResult=platformService.DrawKnnPicture(userId,roleId);
+            System.out.println(paramsResult);
+            result= ResultUtils.commonResult(ResultCodeEnums.SUCCESS.getCode(),ResultCodeEnums.SUCCESS.getMsg(),paramsResult.toJSONString());
+        }catch (Exception e){
+            logger.error("error",e);
+            result= ResultUtils.commonResult(ResultCodeEnums.UNKNOWN_ERROR.getCode(),ResultCodeEnums.UNKNOWN_ERROR.getMsg(),"");
+        }
+        return result;
+    }
 }
 
 

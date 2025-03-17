@@ -16,5 +16,7 @@ public interface PlatformService {
     JSONObject Search(String userId, String roleId,String value);
     void Solvekernel(String userId,String roleId);
     JSONObject DrawMlrPicture(String userId,String roleId);
+
+    JSONObject DrawKnnPicture(String userId, String roleId);
 }
 
