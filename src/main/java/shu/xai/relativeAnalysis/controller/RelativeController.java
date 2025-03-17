@@ -44,11 +44,13 @@ public class RelativeController {
 
             String highDimensionalImageUrl = "/relative/highDimensionalImage";
             String lowDimensionalImageUrl = "/relative/lowDimensionalImage";
+            String FValueImage = "/relative/FValueImage";
 
             // 返回图片 URL
             Map<String, String> imageUrls = new HashMap<>();
             imageUrls.put("highDimensionalImage", highDimensionalImageUrl);
             imageUrls.put("lowDimensionalImage", lowDimensionalImageUrl);
+            imageUrls.put("FValueImage", FValueImage);
 
             return ResponseEntity.ok(imageUrls);
 
@@ -110,6 +112,30 @@ public class RelativeController {
         }
     }
 
+    @GetMapping("/FValueImage")
+    public ResponseEntity<Resource> getFValueImage() {
+        try {
+            // 获取低维图片文件
+            File file = relativeService.getFValueImage();
+
+            if (file == null || !file.exists()) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body(new InputStreamResource(new ByteArrayInputStream("Failed to generate image".getBytes())));
+            }
+
+            // 读取生成的图片并返回
+            InputStreamResource resource = new InputStreamResource(new FileInputStream(file));
+
+            return ResponseEntity.ok()
+                    .contentType(MediaType.IMAGE_PNG)
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + file.getName() + "\"")
+                    .body(resource);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
 
 
 

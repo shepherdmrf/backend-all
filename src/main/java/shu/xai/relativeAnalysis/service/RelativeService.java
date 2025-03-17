@@ -16,4 +16,6 @@ public interface RelativeService {
     File getHighDimensionalImage();
 
     File getLowDimensionalImage();
+
+    File getFValueImage();
 }

@@ -87,6 +87,27 @@ public class RelativeServiceImpl implements RelativeService {
         }
     }
 
+    @Override
+    public File getFValueImage() {
+        try {
+
+            String imagePath = "./src/main/resources/python/MultifacetedModeling/RuleExtraction/SVR/plotting/feature_importance.png";
+
+            // 检查生成的文件是否存在
+            File generatedImage = new File(imagePath);
+            if (!generatedImage.exists()) {
+                throw new RuntimeException("Python script did not generate the image.");
+            }
+
+            // 返回生成的图片文件
+            return generatedImage;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("An error occurred while generating the Venn diagram", e);
+        }
+    }
+
     private String encodeFileToBase64(File file) throws IOException {
         byte[] fileContent = Files.readAllBytes(file.toPath());
         return Base64.getEncoder().encodeToString(fileContent);
