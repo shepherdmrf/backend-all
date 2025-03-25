@@ -30,10 +30,10 @@ public class RelativeServiceImpl implements RelativeService {
     }
 
     @Override
-    public void generateImagesSvr(int id) {
+    public void generateImagesSvr() {
         try {
             // 根据模型和 ID 获取特征数据
-            String features1 = relativeMapper.findSVRById(id);
+            String features1 = relativeMapper.findSVR();
 
             // 调用 Python 脚本
             CallPythonScript.CallSVRTrainning(features1);
@@ -92,6 +92,48 @@ public class RelativeServiceImpl implements RelativeService {
         try {
 
             String imagePath = "./src/main/resources/python/MultifacetedModeling/RuleExtraction/SVR/plotting/feature_importance.png";
+
+            // 检查生成的文件是否存在
+            File generatedImage = new File(imagePath);
+            if (!generatedImage.exists()) {
+                throw new RuntimeException("Python script did not generate the image.");
+            }
+
+            // 返回生成的图片文件
+            return generatedImage;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("An error occurred while generating the Venn diagram", e);
+        }
+    }
+
+    @Override
+    public List<KeyKnowledgeFeature> getGPRCluster() {
+        return relativeMapper.getGPRCluster();
+    }
+
+    @Override
+    public void generateImagesGpr() {
+        try {
+            // 根据模型和 ID 获取特征数据
+            String features1 = relativeMapper.findGPR();
+
+            // 调用 Python 脚本
+            CallPythonScript.CallGPRTraining(features1);
+            CallPythonScript.CallGPRVisual();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("An error occurred while generating the images", e);
+        }
+    }
+
+    @Override
+    public File getGPRImage() {
+        try {
+
+            String imagePath = "./src/main/resources/python/MultifacetedModeling/RuleExtraction/GPR/Uncertainty.png";
 
             // 检查生成的文件是否存在
             File generatedImage = new File(imagePath);

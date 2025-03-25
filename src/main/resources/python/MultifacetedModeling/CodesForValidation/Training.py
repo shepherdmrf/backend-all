@@ -6,7 +6,6 @@ import sys
 import os
 current_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.dirname(current_dir)  # 上一层目录
-sys.path.append(parent_dir)
 
 from Printting import create_directory, create_workbook, save_to_excel_1d
 from FeatureSelection.DncorCal import DataDrivenNCOR

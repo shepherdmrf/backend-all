@@ -374,4 +374,85 @@ public class CallPythonScript {
             e.printStackTrace();
         }
     }
+
+    public static void CallGPRTraining(String features1){
+        try {
+            // 设置 Python 可执行文件路径和脚本路径
+            String pythonPath = "python.exe";
+            String scriptPath = "./training.py";
+
+            String encodedFeatures1 = URLEncoder.encode(features1, "UTF-8");
+            // 构造 Python 命令，传递参数给脚本
+            ProcessBuilder processBuilder = new ProcessBuilder(pythonPath, scriptPath, encodedFeatures1);
+
+            String systemPath = System.getenv("PATH");
+            Map<String, String> env = processBuilder.environment();
+            env.put("PATH", systemPath);
+//            processBuilder.directory(new java.io.File("./src/main/resources/python/MultifacetedModeling/RuleExtraction/SVR"));
+            processBuilder.directory(new java.io.File("./src/main/resources/python/MultifacetedModeling/RuleExtraction/GPR"));
+
+            // 启动进程
+            Process process = processBuilder.start();
+
+            // 获取输出
+            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            String line;
+            while ((line = reader.readLine()) != null) {
+                System.out.println(line); // 输出 Python 执行的日志
+            }
+
+            // 读取错误输出
+            BufferedReader errorReader = new BufferedReader(new InputStreamReader(process.getErrorStream(), StandardCharsets.UTF_8));
+            while ((line = errorReader.readLine()) != null) {
+                System.err.println("Error: " + line);
+            }
+
+            // 等待脚本执行完毕
+            int exitCode = process.waitFor();
+            System.out.println("Python script exited with code: " + exitCode);
+
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void CallGPRVisual(){
+        try {
+            // 设置 Python 可执行文件路径和脚本路径
+            String pythonPath = "python.exe";
+            String scriptPath = "./visual.py";
+
+            // 构造 Python 命令，传递参数给脚本
+            ProcessBuilder processBuilder = new ProcessBuilder(pythonPath, scriptPath);
+
+            String systemPath = System.getenv("PATH");
+            Map<String, String> env = processBuilder.environment();
+            env.put("PATH", systemPath);
+//            processBuilder.directory(new java.io.File("./src/main/resources/python/MultifacetedModeling/RuleExtraction/SVR"));
+            processBuilder.directory(new java.io.File("./src/main/resources/python/MultifacetedModeling/RuleExtraction/GPR"));
+
+            // 启动进程
+            Process process = processBuilder.start();
+
+            // 获取输出
+            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            String line;
+            while ((line = reader.readLine()) != null) {
+                System.out.println(line); // 输出 Python 执行的日志
+            }
+
+            // 读取错误输出
+            BufferedReader errorReader = new BufferedReader(new InputStreamReader(process.getErrorStream(), StandardCharsets.UTF_8));
+            while ((line = errorReader.readLine()) != null) {
+                System.err.println("Error: " + line);
+            }
+
+            // 等待脚本执行完毕
+            int exitCode = process.waitFor();
+            System.out.println("Python script exited with code: " + exitCode);
+
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
 }

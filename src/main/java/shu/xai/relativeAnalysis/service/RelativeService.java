@@ -11,11 +11,17 @@ public interface RelativeService {
 
     List<KeyKnowledgeFeature> getSVRCluster();
 
-    void generateImagesSvr(int id);
+    void generateImagesSvr();
+
+    void generateImagesGpr();
 
     File getHighDimensionalImage();
 
     File getLowDimensionalImage();
 
     File getFValueImage();
+
+    List<KeyKnowledgeFeature> getGPRCluster();
+
+    File getGPRImage();
 }
