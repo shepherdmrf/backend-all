@@ -12,7 +12,7 @@ import copy
 from Printting import create_directory, create_workbook, save_to_excel_2d
 
 # 步骤三：“阈值”敏感性分析，其中“阈值”约简决策表的阈值
-
+print("run start")
 
 # 将特征组合转换为二进制编码数组
 def binary_code(x, num):

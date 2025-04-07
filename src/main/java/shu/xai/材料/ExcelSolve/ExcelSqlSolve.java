@@ -2,6 +2,7 @@ package shu.xai.材料.ExcelSolve;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.sql.*;
 
 import org.springframework.dao.DataAccessException;
@@ -340,61 +341,187 @@ public class ExcelSqlSolve {
         // 返回生成的 INSERT SQL 语句
         return insertSQL;
     }
-        public void RuleinsertExcelDataToSQL(String excelFilePath, String insertSQL, String sheetName, List<Integer> selectedColumns,int startrow) throws Exception {
-            try (FileInputStream file = new FileInputStream(excelFilePath);
-                 Workbook workbook = new XSSFWorkbook(file)) {
 
-                // 获取指定的 Sheet
-                Sheet sheet = workbook.getSheet(sheetName);
-                if (sheet == null) {
-                    System.out.println("指定的工作表 " + sheetName + " 不存在！");
-                    return;
-                }
+    public void RuleinsertExcelDataToSQL(String excelFilePath, String insertSQL, String sheetName, List<Integer> selectedColumns, int startrow) throws Exception {
+        try (FileInputStream file = new FileInputStream(excelFilePath);
+             Workbook workbook = new XSSFWorkbook(file)) {
 
-                // 遍历 Excel 行
-                for (int i = startrow; i < sheet.getPhysicalNumberOfRows(); i++) { // 跳过表头，从第二行开始
-                    Row row = sheet.getRow(i);
-                    if (row != null) {
-                        jdbcTemplateRule.update(connection -> {
-                            PreparedStatement pstmt = connection.prepareStatement(insertSQL);
-                            int columnIndex = 1; // PreparedStatement 索引从 1 开始
+            // 获取指定的 Sheet
+            Sheet sheet = workbook.getSheet(sheetName);
+            if (sheet == null) {
+                System.out.println("指定的工作表 " + sheetName + " 不存在！");
+                return;
+            }
 
-                            // **只处理 selectedColumns 指定的列**
-                            for (int col : selectedColumns) {
-                                Cell cell = row.getCell(col, Row.MissingCellPolicy.RETURN_BLANK_AS_NULL);
-                                if (cell == null) {
-                                    pstmt.setNull(columnIndex++, Types.NULL);
-                                } else {
-                                    switch (cell.getCellType()) {
-                                        case STRING:
-                                            pstmt.setString(columnIndex++, cell.getStringCellValue().trim());
-                                            break;
-                                        case NUMERIC:
-                                            if (DateUtil.isCellDateFormatted(cell)) {
-                                                pstmt.setDate(columnIndex++, new java.sql.Date(cell.getDateCellValue().getTime()));
-                                            } else {
-                                                pstmt.setDouble(columnIndex++, cell.getNumericCellValue());
-                                            }
-                                            break;
-                                        case BOOLEAN:
-                                            pstmt.setBoolean(columnIndex++, cell.getBooleanCellValue());
-                                            break;
-                                        default:
-                                            pstmt.setNull(columnIndex++, Types.NULL);
-                                            break;
-                                    }
+            // 遍历 Excel 行
+            for (int i = startrow; i < sheet.getPhysicalNumberOfRows(); i++) { // 跳过表头，从第二行开始
+                Row row = sheet.getRow(i);
+                if (row != null) {
+                    jdbcTemplateRule.update(connection -> {
+                        PreparedStatement pstmt = connection.prepareStatement(insertSQL);
+                        int columnIndex = 1; // PreparedStatement 索引从 1 开始
+
+                        // **只处理 selectedColumns 指定的列**
+                        for (int col : selectedColumns) {
+                            Cell cell = row.getCell(col, Row.MissingCellPolicy.RETURN_BLANK_AS_NULL);
+                            if (cell == null) {
+                                pstmt.setNull(columnIndex++, Types.NULL);
+                            } else {
+                                switch (cell.getCellType()) {
+                                    case STRING:
+                                        pstmt.setString(columnIndex++, cell.getStringCellValue().trim());
+                                        break;
+                                    case NUMERIC:
+                                        if (DateUtil.isCellDateFormatted(cell)) {
+                                            pstmt.setDate(columnIndex++, new java.sql.Date(cell.getDateCellValue().getTime()));
+                                        } else {
+                                            pstmt.setDouble(columnIndex++, cell.getNumericCellValue());
+                                        }
+                                        break;
+                                    case BOOLEAN:
+                                        pstmt.setBoolean(columnIndex++, cell.getBooleanCellValue());
+                                        break;
+                                    default:
+                                        pstmt.setNull(columnIndex++, Types.NULL);
+                                        break;
                                 }
                             }
-                            return pstmt;
-                        });
-                    }
+                        }
+                        return pstmt;
+                    });
                 }
-                System.out.println("数据已成功插入到数据库！");
-            } catch (Exception e) {
-                System.err.println("导入数据时发生错误：" + e.getMessage());
-                e.printStackTrace();
+            }
+            System.out.println("数据已成功插入到数据库！");
+        } catch (Exception e) {
+            System.err.println("导入数据时发生错误：" + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    private void copyRow(Row sourceRow, Row targetRow, int startCol) {
+        if (sourceRow == null || targetRow == null) {
+            return;
+        }
+
+        for (int i = 0; i < sourceRow.getLastCellNum(); i++) {
+            Cell sourceCell = sourceRow.getCell(i);
+            if (sourceCell != null) {
+                Cell targetCell = targetRow.createCell(startCol + i);
+                // 复制单元格内容
+                switch (sourceCell.getCellType()) {
+                    case STRING:
+                        targetCell.setCellValue(sourceCell.getStringCellValue());
+                        break;
+                    case NUMERIC:
+                        targetCell.setCellValue(sourceCell.getNumericCellValue());
+                        break;
+                    case BOOLEAN:
+                        targetCell.setCellValue(sourceCell.getBooleanCellValue());
+                        break;
+                    case FORMULA:
+                        targetCell.setCellFormula(sourceCell.getCellFormula());
+                        break;
+                    default:
+                        targetCell.setCellValue("");
+                }
             }
         }
     }
+
+    public void ServerExcel(String excelFilePath, String outFilePath, String sheetName, String outname, List<Integer> list, int startrow) throws Exception {
+        try (FileInputStream file = new FileInputStream(excelFilePath);
+             Workbook workbook = new XSSFWorkbook(file)) {
+
+            // 获取指定的 Sheet
+            Sheet sheet = workbook.getSheet(sheetName);
+            if (sheet == null) {
+                System.out.println("指定的工作表 " + sheetName + " 不存在！");
+                return;
+            }
+            Workbook destWorkbook = new XSSFWorkbook();
+            Sheet outSheet = destWorkbook.createSheet(outname);
+
+            // 先复制表头行，并在第一列添加"ID"标题
+            Row headerRow = outSheet.createRow(0);
+            headerRow.createCell(0).setCellValue("ID");  // 添加ID列标题
+            copyRow(sheet.getRow(0), headerRow, 1);  // 从第二列开始复制原表头
+
+            // 切割 Excel 行
+            Integer newRowIndex = 1;
+            for (int i = 0; i < list.size(); i++) {
+                int actualRow = list.get(i) + startrow;
+                Row row = sheet.getRow(actualRow);
+                if (row != null) {
+                    Row newRow = outSheet.createRow(newRowIndex++);
+                    // 在第一列添加ID值
+                    newRow.createCell(0).setCellValue(list.get(i));
+                    // 复制原始行内容
+                    copyRow(row, newRow, 1);  // 从第二行开始复制
+                }
+            }
+
+            // 写入新文件
+            try (FileOutputStream fos = new FileOutputStream(outFilePath)) {
+                destWorkbook.write(fos);
+            }
+            System.out.println("成功提取 " + (newRowIndex ) + " 行到: " + outFilePath);
+        } catch (Exception e) {
+            System.err.println("切割数据时发生错误：" + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+    // 读取最后一行数据为List<Double>
+    public List<Double> readLastRow(String filePath, String sheetName) throws Exception {
+        try (FileInputStream file = new FileInputStream(filePath);
+             Workbook workbook = WorkbookFactory.create(file)) {
+
+            Sheet sheet = workbook.getSheet(sheetName);
+            Row lastRow = sheet.getRow(sheet.getLastRowNum());
+
+            List<Double> result = new ArrayList<>();
+            for (int i = 0; i < lastRow.getLastCellNum(); i++) {
+                result.add(parseCell(lastRow.getCell(i)));
+            }
+            return result;
+        }
+    }
+    public List<Double> readFirstColumn(String filePath, String sheetName) throws Exception {
+        try (FileInputStream file = new FileInputStream(filePath);
+             Workbook workbook = WorkbookFactory.create(file)) {
+
+            Sheet sheet = workbook.getSheet(sheetName);
+            List<Double> result = new ArrayList<>(sheet.getLastRowNum()); // 预分配容量
+
+            for (int i = 1; i <= sheet.getLastRowNum(); i++) {
+                result.add(parseCell(sheet.getRow(i).getCell(0)));
+            }
+            return result;
+        }
+    }
+
+    private static double parseCell(Cell cell) {
+        if (cell == null) return Double.NaN;
+
+        try {
+            switch (cell.getCellType()) {
+                case NUMERIC:
+                    return round(cell.getNumericCellValue());
+                case STRING:
+                    return round(Double.parseDouble(cell.getStringCellValue().trim()));
+                case BOOLEAN:
+                    return cell.getBooleanCellValue() ? 1.0 : 0.0;
+                default:
+                    return Double.NaN;
+            }
+        } catch (Exception e) {
+            return Double.NaN;
+        }
+    }
+
+    // 保留4位小数
+    private static double round(double value) {
+        return Math.round(value * 10000.0) / 10000.0;
+    }
+}
 
 

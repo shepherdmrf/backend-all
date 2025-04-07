@@ -91,4 +91,15 @@ public class DataSourceConfig {
     public PlatformTransactionManager TransactionManagersp(@Qualifier("dataSourcesp") DataSource dataSource) {
         return new DataSourceTransactionManager(dataSource);
     }
+
+    @Bean("dataSourcelyzs")
+    @ConfigurationProperties("spring.datasource.druid.lyzs")
+    public DataSource mDataSourceSix(){
+        return DruidDataSourceBuilder.create().build();
+    }
+
+    @Bean(name = "jdbcTemplatelyzs")
+    public JdbcTemplate jdbcTemplateLyzs(@Qualifier("dataSourcelyzs") DataSource dataSource) {
+        return new JdbcTemplate(dataSource);
+    }
 }

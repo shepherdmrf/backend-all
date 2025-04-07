@@ -42,4 +42,5 @@ if __name__ == '__main__':
             create_workbook(path)
             save_to_excel_2d(binary_conditions, range(45), path, result_index, 1, 2)
             save_to_excel_1d(cs, 'd_class', path, result_index, 46, 2)
+            print("run over")
 

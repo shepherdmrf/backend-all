@@ -32,15 +32,27 @@ public interface FeatureMapper {
     List<KeyKnowledgeFeature> findKnowledgeGPR();
 
     @Select("SELECT positive_kernel FROM feature_table.mlr_positive_kernel")
+    @Results({
+            @Result(column = "positive_kernel", property = "positive_kernel")
+    })
     List<Feature> findDataMLR();
 
     @Select("SELECT positive_kernel FROM feature_table.knn_positive_kernel")
+    @Results({
+            @Result(column = "positive_kernel", property = "positive_kernel")
+    })
     List<Feature> findDataKNN();
 
     @Select("SELECT positive_kernel FROM feature_table.svr_positive_kernel")
+    @Results({
+            @Result(column = "positive_kernel", property = "positive_kernel")
+    })
     List<Feature> findDataSVR();
 
     @Select("SELECT positive_kernel FROM feature_table.gpr_positive_kernel")
+    @Results({
+            @Result(column = "positive_kernel", property = "positive_kernel")
+    })
     List<Feature> findDataGPR();
 
     @Select("SELECT features FROM data.mlr_positivekernel WHERE id = #{id}")

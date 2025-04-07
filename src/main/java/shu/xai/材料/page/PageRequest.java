@@ -4,6 +4,8 @@ public class PageRequest {
     private int page;        // 修改为小写字母开头
     private int pageSize;    // 修改为小写字母开头
     private String value1;   // 保持与前端一致
+    private String value;
+    private String radio;
 
     // Getter 和 Setter 方法
     public int getPage() {
@@ -28,5 +30,20 @@ public class PageRequest {
 
     public void setValue1(String value1) {
         this.value1 = value1;
+    }
+
+    public String getValue() {
+        return value;
+    }
+    public void setValue(String value) {
+        this.value = value;
+    }
+
+    public String getRadio() {
+        return radio;
+    }
+
+    public void setRadio(String radio) {
+        this.radio = radio;
     }
 }

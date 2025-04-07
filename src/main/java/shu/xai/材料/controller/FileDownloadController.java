@@ -1,6 +1,9 @@
 package shu.xai.材料.controller;
 
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -10,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.io.*;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -167,5 +171,32 @@ public class FileDownloadController {
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=files.zip")
                 .body(resource);
+    }
+    @GetMapping("/download/treeCluster")
+    public ResponseEntity<Resource> handleDownload(
+            @RequestParam String level,
+            @RequestParam String node) throws Exception {
+
+        // 1. 根据层级(level)和节点(node)生成或获取文件
+        String fileName = String.format("%s-%s.xlsx", level, node);
+        String downLoadPath="./src/main/resources/python/MultifacetedModeling/RuleExtraction/KNN/TreeCluster/";
+        String excelPath=downLoadPath +fileName;
+        Path filePath = Paths.get(excelPath); // 例如: "/data/exports/"
+
+        // 2. 检查文件是否存在
+        if (!Files.exists(filePath)) {
+            throw new RuntimeException("文件不存在: " + fileName);
+        }
+
+        // 3. 设置响应头
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Disposition", "attachment; filename=" + fileName); // 强制下载
+        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM); // 二进制流
+
+        // 4. 返回文件流
+        return ResponseEntity.ok()
+                .headers(headers)
+                .contentLength(Files.size(filePath))
+                .body(new FileSystemResource(filePath));
     }
 }

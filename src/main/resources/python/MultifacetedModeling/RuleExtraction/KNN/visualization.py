@@ -10,6 +10,7 @@ from matplotlib import pyplot as plt
 import matplotlib.font_manager
 from openpyxl import Workbook
 import io
+import ast
 # 解决中文字体问题
 mpl.rcParams["font.sans-serif"] = ["Arial"]
 mpl.rcParams["font.size"] = 12
@@ -19,6 +20,9 @@ sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8')
 
 if __name__ == '__main__':
     # 读取 Excel 数据
+    if len(sys.argv) > 1:
+            kernels = ast.literal_eval(sys.argv[1])
+            print(kernels)
     data = pd.DataFrame(pd.read_excel('./data_cluster.xlsx', sheet_name='data')).values[1:-1, 3:-2]
     data = data.astype(np.float64)
 

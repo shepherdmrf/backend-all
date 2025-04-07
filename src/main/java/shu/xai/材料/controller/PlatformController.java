@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -28,6 +29,22 @@ public class PlatformController {
 
     @Autowired
     private PlatformService platformService;
+
+    @RequestMapping("/KNNAnalyze")
+    public String KNNAnalyze(HttpServletRequest request) {
+        String result = "";
+        try {
+            String userId = String.valueOf(request.getSession().getAttribute("userId"));
+            String roleId = String.valueOf(request.getSession().getAttribute("roleId"));
+            JSONObject nodes=platformService.Analyrizeknn(userId,roleId);
+            platformService.ServerExcelTable(nodes);
+            result = ResultUtils.commonResult(ResultCodeEnums.SUCCESS.getCode(), ResultCodeEnums.SUCCESS.getMsg(),nodes.toJSONString());
+        } catch (Exception e) {
+            logger.error("error", e);
+            result = ResultUtils.commonResult(ResultCodeEnums.UNKNOWN_ERROR.getCode(), ResultCodeEnums.UNKNOWN_ERROR.getMsg(), "");
+        }
+        return result;
+    }
 
     @RequestMapping("/getSign")
     public String getSignTable(HttpServletRequest request) {
@@ -55,7 +72,9 @@ public class PlatformController {
             int repeat = pageRequest.getRepeat();
             int iteration = pageRequest.getIteration();
             String value1 = pageRequest.getValue1();
-            platformService.SolveFeatureTable(userId, roleId, repeat, iteration);
+            String value=pageRequest.getValue();
+            String radio=pageRequest.getRadio();
+            platformService.SolveFeatureTable(userId, roleId, repeat, iteration, value,radio);
             JSONObject paramsResult = platformService.SearchFeatureTable(userId, roleId, page, pagesize, value1);
             result = ResultUtils.commonResult(ResultCodeEnums.SUCCESS.getCode(), ResultCodeEnums.SUCCESS.getMsg(), paramsResult.toJSONString());
         } catch (Exception e) {
@@ -242,6 +261,21 @@ public class PlatformController {
             String roleId= String.valueOf(request.getSession().getAttribute("roleId"));
             JSONObject paramsResult=platformService.DrawKnnPicture(userId,roleId);
             System.out.println(paramsResult);
+            result= ResultUtils.commonResult(ResultCodeEnums.SUCCESS.getCode(),ResultCodeEnums.SUCCESS.getMsg(),paramsResult.toJSONString());
+        }catch (Exception e){
+            logger.error("error",e);
+            result= ResultUtils.commonResult(ResultCodeEnums.UNKNOWN_ERROR.getCode(),ResultCodeEnums.UNKNOWN_ERROR.getMsg(),"");
+        }
+        return result;
+    }
+
+    @RequestMapping("/MLRAnalyze")
+    public String MLRAnalyze(HttpServletRequest request) {
+        String result="";
+        try{
+            String userId= String.valueOf(request.getSession().getAttribute("userId"));
+            String roleId= String.valueOf(request.getSession().getAttribute("roleId"));
+            JSONObject paramsResult=platformService.MLRRelationAnalyze(userId,roleId);
             result= ResultUtils.commonResult(ResultCodeEnums.SUCCESS.getCode(),ResultCodeEnums.SUCCESS.getMsg(),paramsResult.toJSONString());
         }catch (Exception e){
             logger.error("error",e);

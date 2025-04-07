@@ -6,6 +6,8 @@ public class PageRequestCopy {
     private String Value1;
     private int Repeat;
     private int Iteration;
+    private String Value;
+    private String Radio;
 
     public int getPage() {
         return Page;
@@ -46,5 +48,21 @@ public class PageRequestCopy {
 
     public void setIteration(int iteration) {
         Iteration = iteration;
+    }
+
+    public String getValue() {
+        return Value;
+    }
+
+    public void setValue(String value) {
+        Value = value;
+    }
+
+    public String getRadio() {
+        return Radio;
+    }
+
+    public void setRadio(String radio) {
+        Radio = radio;
     }
 }

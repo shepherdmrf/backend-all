@@ -3,8 +3,10 @@ package shu.xai.材料.service.impl;
 import com.alibaba.fastjson.JSONArray;
 
 import com.alibaba.fastjson.JSONObject;
+import com.fasterxml.classmate.Annotations;
+import com.sun.org.apache.bcel.internal.generic.INEG;
 import com.sun.org.apache.bcel.internal.generic.NEW;
-import org.apache.ibatis.jdbc.Null;
+import com.sun.org.apache.xpath.internal.objects.XObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -16,6 +18,7 @@ import shu.xai.材料.page.treeNode;
 import shu.xai.材料.service.CallPython.CallPythonScript;
 import shu.xai.材料.service.PlatformService;
 import javax.annotation.Resource;
+import javax.validation.constraints.Null;
 import java.util.*;
 
 import org.springframework.http.HttpHeaders;
@@ -24,6 +27,7 @@ import org.springframework.core.io.InputStreamResource;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import java.io.*;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import java.io.File;
@@ -64,7 +68,7 @@ public class PlatformServiceImpl implements PlatformService {
         return response;
     }
 
-    public void SolveFeatureTable(String userId, String roleId,int repeat,int iteration) {
+    public void SolveFeatureTable(String userId, String roleId, int repeat, int iteration,String value,String radio) {
         List<String> arg1 = Arrays.asList(String.valueOf(1));
         String work1 = "./src/main/resources/python/MultifacetedModeling/DataPreProcessing";
         String script1 = "./split_data.py";
@@ -72,7 +76,7 @@ public class PlatformServiceImpl implements PlatformService {
         List<String> arg2 = Arrays.asList(String.valueOf(1), String.valueOf(repeat), String.valueOf(iteration));
         String work2 = "./src/main/resources/python/MultifacetedModeling/CodesForValidation";
         String script2 = "./DKncorFSonTrain.py";
-        CallPythonScript.call(script2,work2,arg2);
+        CallPythonScript.call(script2, work2, arg2);
         List<String> models = Arrays.asList("GPR", "KNN", "MLR", "SVR");
         // 清除数据库表并插入数据
         for (int i = 0; i < models.size(); i++) {
@@ -107,7 +111,7 @@ public class PlatformServiceImpl implements PlatformService {
                 // 确保 SQL 语句中的空格
                 sql = "SELECT * FROM " + value1 + " LIMIT ? OFFSET ?";
                 searchResult = jdbcTemplatefeature.queryForList(sql, pageSize, start);
-                totalRecords=jdbcTemplatefeature.queryForObject("SELECT COUNT(*) FROM " + value1, Integer.class);
+                totalRecords = jdbcTemplatefeature.queryForObject("SELECT COUNT(*) FROM " + value1, Integer.class);
                 for (Map<String, Object> row : searchResult) {
                     result.add(new JSONObject(row));
                 }
@@ -152,7 +156,7 @@ public class PlatformServiceImpl implements PlatformService {
     @Override
     public JSONObject GetKnowlegekernels(String userId, String roleId, List<List<Integer>> KnowledgeKernels) {
         // 调用 Python 脚本
-        List<String> arg= Arrays.asList("10");
+        List<String> arg = Arrays.asList("10");
         String work1 = "./src/main/resources/python/MultifacetedModeling/DataPreProcessing";
         String script1 = "./split_data.py";
         CallPythonScript.call(script1, work1, arg);
@@ -234,10 +238,10 @@ public class PlatformServiceImpl implements PlatformService {
                         minValue = currentValue;
                     }
                 }
-                JSONObject m=new JSONObject(min);
+                JSONObject m = new JSONObject(min);
                 temp.add(m);  // 将最小值加入到当前组的结果中
             }
-            result.put(models.get(i),temp);  // 将每个组的最小值集合加入到最终结果中
+            result.put(models.get(i), temp);  // 将每个组的最小值集合加入到最终结果中
         }
 
         // 将结果插入数据库
@@ -275,9 +279,9 @@ public class PlatformServiceImpl implements PlatformService {
 
     @Override
     public void Solvecluster() {
-        String script="./step1_clustering.py";
-        String work="./src/main/resources/python/MultifacetedModeling/KernelCal";
-        CallPythonScript.call(script,work);
+        String script = "./step1_clustering.py";
+        String work = "./src/main/resources/python/MultifacetedModeling/KernelCal";
+        CallPythonScript.call(script, work);
         List<String> models = Arrays.asList("GPR", "KNN", "MLR", "SVR");
         // 清除数据库表并插入数据
         for (int i = 0; i < models.size(); i++) {
@@ -301,32 +305,32 @@ public class PlatformServiceImpl implements PlatformService {
 
     @Override
     public void SolvesimpleDecision(String userId, String roleId) {
-        String work="./src/main/resources/python/MultifacetedModeling/KernelCal";
-        String script0="./step2_count.py";
-        String script1="./step3_threshold_analysis.py";
-        String script2="./step4_decision_table_construct.py";
-        CallPythonScript.call(script0,work);
-        CallPythonScript.call(script1,work);
-        CallPythonScript.call(script2,work);
-        String insertpart= excelSqlSolve.creatSqledecision_table();
-        String inserthead="insert into ";
-        List<String> Models= Arrays.asList("GPR","KNN","MLR","SVR");
+        String work = "./src/main/resources/python/MultifacetedModeling/KernelCal";
+        String script0 = "./step2_count.py";
+        String script1 = "./step3_threshold_analysis.py";
+        String script2 = "./step4_decision_table_construct.py";
+        CallPythonScript.call(script0, work);
+        CallPythonScript.call(script1, work);
+        CallPythonScript.call(script2, work);
+        String insertpart = excelSqlSolve.creatSqledecision_table();
+        String inserthead = "insert into ";
+        List<String> Models = Arrays.asList("GPR", "KNN", "MLR", "SVR");
 
         List<String> models = Arrays.asList("gpr_decision_table", "knn_decision_table", "mlr_decision_table", "svr_decision_table");
-        for (int i=0; i<models.size();i++) {
+        for (int i = 0; i < models.size(); i++) {
             try {
-            excelSqlSolve.clearTable(models.get(i));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        String insertSql=inserthead+models.get(i)+insertpart;
-        System.out.println(insertSql);
-        String exceladdress="./src/main/resources/python/MultifacetedModeling/DataOutput/"+Models.get(i)+"/decision_table.xlsx";
-        try {
-            excelSqlSolve.insertExcelDataToSQL(exceladdress, insertSql, "result0");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+                excelSqlSolve.clearTable(models.get(i));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            String insertSql = inserthead + models.get(i) + insertpart;
+            System.out.println(insertSql);
+            String exceladdress = "./src/main/resources/python/MultifacetedModeling/DataOutput/" + Models.get(i) + "/decision_table.xlsx";
+            try {
+                excelSqlSolve.insertExcelDataToSQL(exceladdress, insertSql, "result0");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -343,7 +347,7 @@ public class PlatformServiceImpl implements PlatformService {
                 result.add(new JSONObject(row));
             }
             response.put("list", result);
-        }catch (DataAccessException e) {
+        } catch (DataAccessException e) {
             e.printStackTrace();
         }
         return response;
@@ -351,23 +355,23 @@ public class PlatformServiceImpl implements PlatformService {
 
     @Override
     public void Solvekernel(String userId, String roleId) {
-        String work="./src/main/resources/python/MultifacetedModeling/KernelCal";
-        String script="./step5_kernel_cal.py";
-        CallPythonScript.call(script,work);
-        String inserthead="insert into ";
+        String work = "./src/main/resources/python/MultifacetedModeling/KernelCal";
+        String script = "./step5_kernel_cal.py";
+        CallPythonScript.call(script, work);
+        String inserthead = "insert into ";
         String insertPart = " (`kernels`) VALUES (?)";
-        List<String> Models= Arrays.asList("GPR","KNN","MLR","SVR");
+        List<String> Models = Arrays.asList("GPR", "KNN", "MLR", "SVR");
 
         List<String> models = Arrays.asList("gpr_kernel", "knn_kernel", "mlr_kernel", "svr_kernel");
-        for (int i=0; i<models.size();i++) {
+        for (int i = 0; i < models.size(); i++) {
             try {
                 excelSqlSolve.clearTable(models.get(i));
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            String insertSql=inserthead+models.get(i)+insertPart;
+            String insertSql = inserthead + models.get(i) + insertPart;
             System.out.println(insertSql);
-            String exceladdress="./src/main/resources/python/MultifacetedModeling/DataOutput/"+Models.get(i)+"/kernels.xlsx";
+            String exceladdress = "./src/main/resources/python/MultifacetedModeling/DataOutput/" + Models.get(i) + "/kernels.xlsx";
             try {
                 excelSqlSolve.insertExcelDataToSQL(exceladdress, insertSql, "data");
             } catch (Exception e) {
@@ -377,12 +381,12 @@ public class PlatformServiceImpl implements PlatformService {
     }
 
     @Override
-    public JSONObject DrawMlrPicture(String userId, String roleId) {
+    public JSONObject DrawMlrPicture(String userId, String roleId) throws Exception {
         JSONArray result1 = new JSONArray();
         JSONArray result2 = new JSONArray();
         JSONObject response = new JSONObject();
         if (roleId.equals(RoleCodeEnums.KAIFA.getCode()) || roleId.equals(RoleCodeEnums.IN_MAMAGE.getCode())) {
-            String s="";
+            String s = "";
             try {
                 List<Map<String, Object>> searchResult;
                 String sql;
@@ -396,32 +400,56 @@ public class PlatformServiceImpl implements PlatformService {
             } catch (DataAccessException e) {
                 e.printStackTrace();
             }
-            String work="./src/main/resources/python/MultifacetedModeling/RuleExtraction/MLR";
-            String script="./training.py";
+            String work = "./src/main/resources/python/MultifacetedModeling/RuleExtraction/MLR";
+            String script = "./training.py";
             List<String> list = new ArrayList<>();
             list.add(s);
-            CallPythonScript.call(script,work,list);
-            try{
+            CallPythonScript.call(script, work, list);
+            script = "./correlation_cal.py";
+            CallPythonScript.call(script, work, list);
+            List<Double> Importance = new ArrayList<>();
+            List<Double> PCC=new ArrayList<>();
+            try {
                 excelSqlSolve.RuleClear("MLR1");
                 excelSqlSolve.RuleClear("MLR2");
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            String sql="INSERT INTO `MLR1` (`No.`, `Name`, `Importance`, `PCC`) VALUES (?, ?, ?, ?)";
-            String excelFile="./src/main/resources/python/MultifacetedModeling/RuleExtraction/MLR/training_result.xlsx";
-            String sheetname="all";
-            try{
-                excelSqlSolve.RuleinsertExcelDataToSQL(excelFile,sql,sheetname);
+            try {
+               Importance=excelSqlSolve.readFirstColumn("./src/main/resources/python/MultifacetedModeling/RuleExtraction/MLR/training_result.xlsx","data-3");
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            sql="INSERT INTO `MLR2` (`No.`, `Name`, `Importance`, `PCC`) VALUES (?, ?, ?, ?)";
-            excelFile="./src/main/resources/python/MultifacetedModeling/RuleExtraction/MLR/training_result.xlsx";
-            sheetname="all_pos";
-            try{
-                excelSqlSolve.RuleinsertExcelDataToSQL(excelFile,sql,sheetname);
+            try
+            {
+                PCC=excelSqlSolve.readLastRow("src/main/resources/python/MultifacetedModeling/RuleExtraction/MLR/correlation_coef.xlsx","all_data");
             } catch (Exception e) {
                 e.printStackTrace();
+            }
+            List<Integer> id = Arrays.stream(s.replaceAll("[\\[\\]]", "").split(", "))
+                    .map(Integer::parseInt)  // 使用 map 而不是 mapToInt
+                    .collect(Collectors.toList());
+            String sql="SELECT * FROM sign_table";
+            List<Map<String, Object>> Features;
+            Features=jdbcTemplatefeature.queryForList(sql);
+            List<String>FeaturesName = new LinkedList<>();
+            for(int i=0;i<Features.size();i++)
+            {
+                FeaturesName.add(Features.get(i).get("name").toString());
+            }
+
+            sql = "INSERT INTO `MLR1` (`No.`, `Name`, `Importance`, `PCC`) VALUES (?, ?, ?, ?)";
+            for (int i = 0; i<id.size();i++)
+            {
+                jdbcTemplateRule.update(sql,id.get(i),FeaturesName.get(id.get(i)),Importance.get(i),PCC.get(i));
+
+            }
+            sql = "INSERT INTO `MLR2` (`No.`, `Name`, `Importance`, `PCC`) VALUES (?, ?, ?, ?)";
+            for (int i = 0; i<id.size();i++)
+            {
+                if (PCC.get(i)*Importance.get(i)>=0) {
+                    jdbcTemplateRule.update(sql, id.get(i), FeaturesName.get(id.get(i)), Importance.get(i), PCC.get(i));
+                }
             }
             try {
                 List<Map<String, Object>> searchResult;
@@ -434,7 +462,7 @@ public class PlatformServiceImpl implements PlatformService {
             } catch (DataAccessException e) {
                 e.printStackTrace();
             }
-            response.put("list1",result1);
+            response.put("list1", result1);
 
             try {
                 List<Map<String, Object>> searchResult;
@@ -447,179 +475,566 @@ public class PlatformServiceImpl implements PlatformService {
             } catch (DataAccessException e) {
                 e.printStackTrace();
             }
-            response.put("list2",result2);
+            response.put("list2", result2);
         }
         System.out.println(response);
         return response;
     }
 
-    public boolean search(treeNode root,Integer target)
-    {
-        Queue<treeNode> queue=new LinkedList<>();
+    public boolean search(treeNode root, Integer target) {
+        Queue<treeNode> queue = new LinkedList<>();
         queue.add(root);
-        while (!queue.isEmpty()){
-          treeNode temp=queue.poll();
+        while (!queue.isEmpty()) {
+            treeNode temp = queue.poll();
             if (temp.isLeaf() && target.equals(temp.getValue()))
-              return true;
-          else {
-              if (temp.getLeft()!=null)
-                  queue.add(temp.getLeft());
-              if(temp.getRight()!=null)
-                  queue.add(temp.getRight());
-          }
+                return true;
+            else {
+                if (temp.getLeft() != null)
+                    queue.add(temp.getLeft());
+                if (temp.getRight() != null)
+                    queue.add(temp.getRight());
+            }
         }
         return false;
     }
 
     @Override
     public JSONObject DrawKnnPicture(String userId, String roleId) {
-        String excelFile="./src/main/resources/python/MultifacetedModeling/RuleExtraction/KNN/data_cluster.xlsx";
-        String Sheetname="data";
-        String sql="INSERT INTO `knn_data` (`formula`) VALUES (?)";
+        String excelFile = "./src/main/resources/python/MultifacetedModeling/RuleExtraction/KNN/data_cluster.xlsx";
+        String Sheetname = "data";
+        String sql = "INSERT INTO `knn_data` (`formula`) VALUES (?)";
         List<Integer> columnsToRead = Arrays.asList(2);
-        try{
+        try {
             excelSqlSolve.RuleClear("knn_data");
-            excelSqlSolve.RuleinsertExcelDataToSQL(excelFile,sql,Sheetname,columnsToRead,2);
+            excelSqlSolve.RuleinsertExcelDataToSQL(excelFile, sql, Sheetname, columnsToRead, 2);
         } catch (Exception e) {
             e.printStackTrace();
         }
         List<Map<String, Object>> formula;
         sql = "SELECT formula FROM knn_data";
         formula = jdbcTemplateRule.queryForList(sql);
-        ArrayList<String> formula_name= new ArrayList<>();;
+        ArrayList<String> formula_name = new ArrayList<>();
+        List<Map<String, Object>> best;
+        sql = "SELECT * FROM bestknn";
+        List<String> bestfeatures=new ArrayList<>();
+        best=jdbcTemplatedata.queryForList(sql);
+        bestfeatures.add(best.get(0).get("Features").toString());
         for (Map<String, Object> row : formula) {
             formula_name.add(String.valueOf(row.get("formula")));
         }
-        String work="./src/main/resources/python/MultifacetedModeling/RuleExtraction/KNN";
-        String script="./visualization.py";
-        CallPythonScript.call(script,work);
+        String work = "./src/main/resources/python/MultifacetedModeling/RuleExtraction/KNN";
+        String script = "./visualization.py";
+        CallPythonScript.call(script, work,bestfeatures);
 
-        excelFile="./src/main/resources/python/MultifacetedModeling/RuleExtraction/KNN/clustering_data_tree.xlsx";
-        Sheetname="Hierarchical Clustering Tree";
-        sql="INSERT INTO `knn_tree` (`element1`,`element2`,`distance`) VALUES (?,?,?)";
-        try{
+        excelFile = "./src/main/resources/python/MultifacetedModeling/RuleExtraction/KNN/clustering_data_tree.xlsx";
+        Sheetname = "Hierarchical Clustering Tree";
+        sql = "INSERT INTO `knn_tree` (`element1`,`element2`,`distance`) VALUES (?,?,?)";
+        try {
             excelSqlSolve.RuleClear("knn_tree");
-            excelSqlSolve.RuleinsertExcelDataToSQL(excelFile,sql,Sheetname);
+            excelSqlSolve.RuleinsertExcelDataToSQL(excelFile, sql, Sheetname);
         } catch (Exception e) {
             e.printStackTrace();
         }
-        Set<Integer>nodes=new HashSet<>();
+        Set<Integer> nodes = new HashSet<>();
         List<Map<String, Object>> relation;
-        ArrayList<treeNode> tree=new ArrayList<>();
-        ArrayList<JSONObject> treeNodeRelation= new ArrayList<>();;
+        ArrayList<treeNode> tree = new ArrayList<>();
+        ArrayList<JSONObject> treeNodeRelation = new ArrayList<>();
+        ;
         sql = "SELECT DISTINCT element1, element2, distance FROM knn_tree";
-        relation=jdbcTemplateRule.queryForList(sql);
+        relation = jdbcTemplateRule.queryForList(sql);
 
         for (Map<String, Object> row : relation) {
             treeNodeRelation.add(new JSONObject(row));
         }
         try {
-            for (int i=0;i<treeNodeRelation.size();i++)
-            {
+            for (int i = 0; i < treeNodeRelation.size(); i++) {
 
-                Integer element1=(Integer) treeNodeRelation.get(i).get("element1");
-                Integer element2=(Integer) treeNodeRelation.get(i).get("element2");
-                boolean left=nodes.contains(element1);
-                boolean right=nodes.contains(element2);
-                if(left&&right)
-                {
-                    int j=0;
-                    for (j=0;j<tree.size();j++){
-                        if(search(tree.get(j),element1))
-                        {
+                Integer element1 = (Integer) treeNodeRelation.get(i).get("element1");
+                Integer element2 = (Integer) treeNodeRelation.get(i).get("element2");
+                boolean left = nodes.contains(element1);
+                boolean right = nodes.contains(element2);
+                if (left && right) {
+                    int j = 0;
+                    for (j = 0; j < tree.size(); j++) {
+                        if (search(tree.get(j), element1)) {
                             break;
                         }
                     }
-                    treeNode tree_left=tree.get(j);
+                    treeNode tree_left = tree.get(j);
                     tree.remove(j);
-                    for (j=0;j<tree.size();j++){
-                        if(search(tree.get(j),element2))
-                        {
+                    for (j = 0; j < tree.size(); j++) {
+                        if (search(tree.get(j), element2)) {
                             break;
                         }
                     }
-                    treeNode tree_right=tree.get(j);
+                    treeNode tree_right = tree.get(j);
                     tree.remove(j);
-                    tree.add(new treeNode(tree_left,tree_right,false));
-                }
-                else if (!left&&!right)
-                {
+                    tree.add(new treeNode(tree_left, tree_right, false));
+                } else if (!left && !right) {
                     nodes.add(element1);
                     nodes.add(element2);
-                    treeNode tree_left=new treeNode(null,null,true,element1);
-                    treeNode tree_right=new treeNode(null,null,true,element2);
-                    tree.add(new treeNode(tree_left,tree_right,false));
-                }
-                else if(left)
-                {
-                    int j=0;
-                    for (j=0;j<tree.size();j++){
-                        if(search(tree.get(j),element1))
-                        {
+                    treeNode tree_left = new treeNode(null, null, true, element1);
+                    treeNode tree_right = new treeNode(null, null, true, element2);
+                    tree.add(new treeNode(tree_left, tree_right, false));
+                } else if (left) {
+                    int j = 0;
+                    for (j = 0; j < tree.size(); j++) {
+                        if (search(tree.get(j), element1)) {
                             break;
                         }
                     }
-                    treeNode tree_left=tree.get(j);
+                    treeNode tree_left = tree.get(j);
                     tree.remove(j);
-                    treeNode tree_right=new treeNode(null,null,true,element2);
+                    treeNode tree_right = new treeNode(null, null, true, element2);
                     nodes.add(element2);
-                    tree.add(new treeNode(tree_left,tree_right,false));
-                }
-                else if(right)
-                {
-                    int j=0;
-                    for (j=0;j<tree.size();j++){
-                        if(search(tree.get(j),element2))
-                        {
+                    tree.add(new treeNode(tree_left, tree_right, false));
+                } else if (right) {
+                    int j = 0;
+                    for (j = 0; j < tree.size(); j++) {
+                        if (search(tree.get(j), element2)) {
                             break;
                         }
                     }
-                    treeNode tree_left=new treeNode(null,null,true,element1);
-                    treeNode tree_right=tree.get(j);
+                    treeNode tree_left = new treeNode(null, null, true, element1);
+                    treeNode tree_right = tree.get(j);
                     tree.remove(j);
                     nodes.add(element1);
-                    tree.add(new treeNode(tree_left,tree_right,false));
+                    tree.add(new treeNode(tree_left, tree_right, false));
                 }
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
-        JSONObject result=new JSONObject();
-        JSONArray treeList=new JSONArray();
-        treeNode root=tree.get(tree.size()-1);
-        Queue<treeNode>queue=new LinkedList<>();
-        Queue<Integer>parentQueue=new LinkedList<>();
+        JSONObject result = new JSONObject();
+        JSONArray treeList = new JSONArray();
+        treeNode root = tree.get(tree.size() - 1);
+        Queue<treeNode> queue = new LinkedList<>();
+        Queue<Integer> parentQueue = new LinkedList<>();
         queue.add(root);
         parentQueue.add(-1);
-        Integer id=1;
-        while(!queue.isEmpty())
-        {
-            treeNode temp=queue.poll();
-            Integer parentId=parentQueue.poll();
-            JSONObject node=new JSONObject();
-            node.put("id",id);
-            node.put("parentId",parentId);
+        Integer id = 1;
+        while (!queue.isEmpty()) {
+            treeNode temp = queue.poll();
+            Integer parentId = parentQueue.poll();
+            JSONObject node = new JSONObject();
+            node.put("id", id);
+            node.put("parentId", parentId);
 
-            if(temp.isLeaf()==true) {
-                node.put("formula",formula_name.get(temp.getValue()));
-                node.put("value",temp.getValue());
-            }
-            else
-                node.put("value",-1);
+            if (temp.isLeaf() == true) {
+                node.put("formula", formula_name.get(temp.getValue()));
+                node.put("value", temp.getValue());
+            } else
+                node.put("value", -1);
             treeList.add(node);
-            if(temp.getLeft()!=null)
-            {
+            if (temp.getLeft() != null) {
                 queue.add(temp.getLeft());
                 parentQueue.add(id);
             }
-            if(temp.getRight()!=null)
-            {
+            if (temp.getRight() != null) {
                 queue.add(temp.getRight());
                 parentQueue.add(id);
             }
             id++;
         }
-        result.put("list",treeList);
+        result.put("list", treeList);
+        return result;
+    }
+
+    private void collectLeaves(treeNode node, List<Integer> leaves) {
+        if (node == null) return;
+
+        if (node.isLeaf()) {
+            leaves.add(node.getValue());
+        } else {
+            collectLeaves(node.getLeft(), leaves);
+            collectLeaves(node.getRight(), leaves);
+        }
+    }
+
+    private void processTreeLayers(treeNode root, JSONObject result) {
+        if (root == null) return;
+
+        Queue<treeNode> queue = new LinkedList<>();
+        queue.add(root);
+
+        int level = 1;
+        while (!queue.isEmpty() && level <= 3) {
+            int levelSize = queue.size();
+            int nodeNumber = 1;
+
+            for (int i = 0; i < levelSize; i++) {
+                treeNode node = queue.poll();
+
+                // 收集当前节点的所有叶子节点
+                List<Integer> leaves = new ArrayList<>();
+                collectLeaves(node, leaves);
+
+                // 生成层级-节点键名
+                String key = level + "-" + nodeNumber;
+                result.put(key, leaves);
+
+                // 将子节点加入队列（仅处理到第三层）
+                if (level < 3) {
+                    if (node.getLeft() != null) queue.add(node.getLeft());
+                    if (node.getRight() != null) queue.add(node.getRight());
+                }
+
+                nodeNumber++;
+            }
+            level++;
+        }
+    }
+
+    @Override
+    public JSONObject Analyrizeknn(String userId, String roleId) {
+        String excelFile = "./src/main/resources/python/MultifacetedModeling/RuleExtraction/KNN/data_cluster.xlsx";
+        String Sheetname = "data";
+        String sql = "INSERT INTO `knn_data` (`formula`) VALUES (?)";
+        List<Integer> columnsToRead = Arrays.asList(2);
+        try {
+            excelSqlSolve.RuleClear("knn_data");
+            excelSqlSolve.RuleinsertExcelDataToSQL(excelFile, sql, Sheetname, columnsToRead, 2);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        List<Map<String, Object>> formula;
+        sql = "SELECT formula FROM knn_data";
+        formula = jdbcTemplateRule.queryForList(sql);
+        ArrayList<String> formula_name = new ArrayList<>();
+        ;
+        for (Map<String, Object> row : formula) {
+            formula_name.add(String.valueOf(row.get("formula")));
+        }
+        String work = "./src/main/resources/python/MultifacetedModeling/RuleExtraction/KNN";
+        String script = "./visualization.py";
+        CallPythonScript.call(script, work);
+
+        excelFile = "./src/main/resources/python/MultifacetedModeling/RuleExtraction/KNN/clustering_data_tree.xlsx";
+        Sheetname = "Hierarchical Clustering Tree";
+        sql = "INSERT INTO `knn_tree` (`element1`,`element2`,`distance`) VALUES (?,?,?)";
+        try {
+            excelSqlSolve.RuleClear("knn_tree");
+            excelSqlSolve.RuleinsertExcelDataToSQL(excelFile, sql, Sheetname);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        Set<Integer> nodes = new HashSet<>();
+        List<Map<String, Object>> relation;
+        ArrayList<treeNode> tree = new ArrayList<>();
+        ArrayList<JSONObject> treeNodeRelation = new ArrayList<>();
+        ;
+        sql = "SELECT DISTINCT element1, element2, distance FROM knn_tree";
+        relation = jdbcTemplateRule.queryForList(sql);
+
+        for (Map<String, Object> row : relation) {
+            treeNodeRelation.add(new JSONObject(row));
+        }
+        try {
+            for (int i = 0; i < treeNodeRelation.size(); i++) {
+
+                Integer element1 = (Integer) treeNodeRelation.get(i).get("element1");
+                Integer element2 = (Integer) treeNodeRelation.get(i).get("element2");
+                boolean left = nodes.contains(element1);
+                boolean right = nodes.contains(element2);
+                if (left && right) {
+                    int j = 0;
+                    for (j = 0; j < tree.size(); j++) {
+                        if (search(tree.get(j), element1)) {
+                            break;
+                        }
+                    }
+                    treeNode tree_left = tree.get(j);
+                    tree.remove(j);
+                    for (j = 0; j < tree.size(); j++) {
+                        if (search(tree.get(j), element2)) {
+                            break;
+                        }
+                    }
+                    treeNode tree_right = tree.get(j);
+                    tree.remove(j);
+                    tree.add(new treeNode(tree_left, tree_right, false));
+                } else if (!left && !right) {
+                    nodes.add(element1);
+                    nodes.add(element2);
+                    treeNode tree_left = new treeNode(null, null, true, element1);
+                    treeNode tree_right = new treeNode(null, null, true, element2);
+                    tree.add(new treeNode(tree_left, tree_right, false));
+                } else if (left) {
+                    int j = 0;
+                    for (j = 0; j < tree.size(); j++) {
+                        if (search(tree.get(j), element1)) {
+                            break;
+                        }
+                    }
+                    treeNode tree_left = tree.get(j);
+                    tree.remove(j);
+                    treeNode tree_right = new treeNode(null, null, true, element2);
+                    nodes.add(element2);
+                    tree.add(new treeNode(tree_left, tree_right, false));
+                } else if (right) {
+                    int j = 0;
+                    for (j = 0; j < tree.size(); j++) {
+                        if (search(tree.get(j), element2)) {
+                            break;
+                        }
+                    }
+                    treeNode tree_left = new treeNode(null, null, true, element1);
+                    treeNode tree_right = tree.get(j);
+                    tree.remove(j);
+                    nodes.add(element1);
+                    tree.add(new treeNode(tree_left, tree_right, false));
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        if (!tree.isEmpty()) {
+            treeNode root = tree.get(tree.size() - 1);
+            JSONObject result = new JSONObject();
+
+            // 使用广度优先遍历处理前三层
+            processTreeLayers(root, result);
+
+            return result;
+        } else {
+            return null;
+        }
+    }
+
+    @Override
+    public void ServerExcelTable(JSONObject list) {
+        try {
+            for (String key : list.keySet()) {
+                String name = key;
+                JSONArray value=list.getJSONArray(name);
+                List<Integer> arrayList = new ArrayList<>();
+                for (int i = 0; i < value.size(); i++) {
+                    String numStr = value.getString(i);
+                    arrayList.add(Integer.parseInt(numStr));
+                }
+                String srcFile = "./src/main/resources/python/MultifacetedModeling/DataInput/uploadedFile.xlsx";
+                String outFile = "./src/main/resources/python/MultifacetedModeling/RuleExtraction/KNN/TreeCluster/" + name + ".xlsx";
+                String srcSheet = "data";
+                String outName = "data";
+                excelSqlSolve.ServerExcel(srcFile, outFile, srcSheet, outName,arrayList,1);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private JSONArray convertToDescription(List<Map<String, Object>> rules) {
+        JSONArray result = new JSONArray();
+        if (rules == null || rules.isEmpty()) {
+            return result;
+        }
+
+        // 1. 按category分组
+        Map<String, List<Map<String, Object>>> categoryMap = new HashMap<>();
+        for (Map<String, Object> rule : rules) {
+            String category = rule.get("category") != null ? rule.get("category").toString() : "";
+            categoryMap.computeIfAbsent(category, k -> new ArrayList<>()).add(rule);
+        }
+
+        // 2. 处理每个category
+        for (Map.Entry<String, List<Map<String, Object>>> entry : categoryMap.entrySet()) {
+            String category = entry.getKey();
+            List<Map<String, Object>> ruleList = entry.getValue();
+
+            switch (category) {
+                case "通道瓶颈尺寸参数":
+                    JSONObject channelDesc = new JSONObject();
+                    channelDesc.put("description", "通道尺寸");
+
+                    int positive = 0, negative = 0;
+                    for (Map<String, Object> rule : ruleList) {
+                        double importance = 0;
+                        try {
+                            importance = Double.parseDouble(rule.get("Importance").toString());
+                        } catch (Exception e) {
+                            continue;
+                        }
+
+                        if (importance > 0) positive++;
+                        else if (importance < 0) negative++;
+                    }
+
+                    if (positive > negative) {
+                        channelDesc.put("direction", "↑ → 势垒 ↑");
+                        channelDesc.put("trend", "positive");
+                    } else {
+                        channelDesc.put("direction", "↑ → 势垒 ↓");
+                        channelDesc.put("trend", "negative");
+                    }
+                    result.add(channelDesc);
+                    break;
+
+                case "通用结构参数":
+                    boolean hasCellSize = false;
+                    boolean hasPos = false, hasNeg = false;
+
+                    for (Map<String, Object> rule : ruleList) {
+                        String descriptor = rule.get("descriptor_name") != null ?
+                                rule.get("descriptor_name").toString() : "";
+                        double importance = 0;
+                        try {
+                            importance = Double.parseDouble(rule.get("Importance").toString());
+                        } catch (Exception e) {
+                            continue;
+                        }
+
+                        // 检查晶胞参数
+                        if (descriptor.equals("a") || descriptor.equals("c") || descriptor.equals("V")) {
+                            hasCellSize = true;
+                            if (importance > 0) hasPos = true;
+                            else if (importance < 0) hasNeg = true;
+                            continue;
+                        }
+
+                        // 处理普通参数
+                        JSONObject desc = new JSONObject();
+                        desc.put("description", rule.get("physical_meaning") != null ?
+                                rule.get("physical_meaning").toString() : "");
+                        if (importance < 0) {
+                            desc.put("direction", "↑ → 势垒 ↓");
+                            desc.put("trend", "negative");
+                        } else {
+                            desc.put("direction", "↑ → 势垒 ↑");
+                            desc.put("trend", "positive");
+                        }
+                        result.add(desc);
+                    }
+
+                    // 处理晶胞尺寸
+                    if (hasCellSize) {
+                        JSONObject cellDesc = new JSONObject();
+                        cellDesc.put("description", "晶胞尺寸");
+
+                        if (hasNeg && !hasPos) {
+                            cellDesc.put("direction", "↑ → 势垒 ↓");
+                            cellDesc.put("trend", "negative");
+                            result.add(cellDesc);
+                        } else if (!hasNeg && hasPos) {
+                            cellDesc.put("direction", "↑ → 势垒 ↑");
+                            cellDesc.put("trend", "positive");
+                            result.add(cellDesc);
+                        }
+                        // 可选：处理混合情况
+                    }
+                    break;
+
+                case "热力学与熵参数":
+                    for (Map<String, Object> rule : ruleList) {
+                        double importance = 0;
+                        try {
+                            importance = Double.parseDouble(rule.get("Importance").toString());
+                        } catch (Exception e) {
+                            continue;
+                        }
+                        if (rule.get("descriptor_name").toString().equals("T"))
+                        {
+                            JSONObject desc = new JSONObject();
+                            desc.put("description", "温度");
+                            if (importance < 0) {
+                                desc.put("direction", "↑ → 势垒 ↓");
+                                desc.put("trend", "negative");
+                            } else {
+                                desc.put("direction", "↑ → 势垒 ↑");
+                                desc.put("trend", "positive");
+                            }
+                            result.add(desc);
+                        }
+                        else{
+                            JSONObject desc = new JSONObject();
+                            String description = rule.get("descriptor_name")+"构型熵";
+                            desc.put("description", description);
+                            if (importance < 0) {
+                                desc.put("direction", "↑ → 势垒 ↓");
+                                desc.put("trend", "negative");
+                            } else {
+                                desc.put("direction", "↑ → 势垒 ↑");
+                                desc.put("trend", "positive");
+                            }
+                            result.add(desc);
+                        }
+                    }
+                    break;
+
+                case "M元素相关特性":
+                case "X元素相关特性":
+                    JSONObject mixDesc = new JSONObject();
+                    String elementType = category.equals("M元素相关特性") ? "M位" : "X位";
+                    mixDesc.put("description", elementType + "元素混杂度");
+
+                    int mixPos = 0, mixNeg = 0;
+                    for (Map<String, Object> rule : ruleList) {
+                        double importance = 0;
+                        try {
+                            importance = Double.parseDouble(rule.get("Importance").toString());
+                        } catch (Exception e) {
+                            continue;
+                        }
+                        String descriptor = rule.get("descriptor_name") != null ?
+                                rule.get("descriptor_name").toString() : "";
+
+                        // 精确匹配原子半径描述符
+                        if (descriptor.contains("原子半径")) { // 根据实际描述符调整
+                            JSONObject radiusDesc = new JSONObject();
+                            radiusDesc.put("description", elementType + "原子半径");
+                            if (importance < 0) {
+                                radiusDesc.put("direction", "↑ → 势垒 ↓");
+                                radiusDesc.put("trend", "negative");
+                            } else {
+                                radiusDesc.put("direction", "↑ → 势垒 ↑");
+                                radiusDesc.put("trend", "positive");
+                            }
+                            result.add(radiusDesc);
+                            continue;
+                        }
+
+                        // 其他参数计入混杂度统计
+                        if (importance > 0) mixPos++;
+                        else if (importance < 0) mixNeg++;
+                    }
+
+                    if (mixPos > mixNeg) {
+                        mixDesc.put("direction", "↑ → 势垒 ↑");
+                        mixDesc.put("trend", "positive");
+                    } else if (mixNeg > mixPos) {
+                        mixDesc.put("direction", "↑ → 势垒 ↓");
+                        mixDesc.put("trend", "negative");
+                    } else if (mixPos + mixNeg > 0) {
+                        mixDesc.put("direction", "↑ → 势垒 ↓");
+                        mixDesc.put("trend", "negative");
+                    }
+
+                    if (mixPos + mixNeg > 0) {
+                        result.add(mixDesc);
+                    }
+                    break;
+            }
+        }
+        return result;
+    }
+    @Override
+    public JSONObject MLRRelationAnalyze(String userId, String roleId) {
+        List<Map<String, Object>>rules = new ArrayList<>();
+        String sql="SELECT * FROM mlr2";
+        List<Map<String, Object>> Features;
+        Features = jdbcTemplateRule.queryForList(sql);
+        sql="SELECT * FROM material_descriptors";
+        List<Map<String, Object>> propriety;
+        propriety=jdbcTemplateRule.queryForList(sql);
+        for (Map<String, Object> feature : Features) {
+            Integer id= Integer.valueOf(feature.get("No.").toString());
+            Double importance=Double.valueOf(feature.get("Importance").toString());
+            Map<String,Object>roll=propriety.get(id);
+            roll.put("Importance",importance);
+            rules.add(roll);
+        }
+        JSONArray list=convertToDescription(rules);
+        JSONObject result=new JSONObject();
+        result.put("list",list);
         return result;
     }
 }

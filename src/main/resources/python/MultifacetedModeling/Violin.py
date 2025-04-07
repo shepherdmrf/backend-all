@@ -23,7 +23,7 @@ sns.set(style="whitegrid")
 plt.figure(figsize=(20, 10))
 
 # 绘制标准化数据的小提琴图
-ax = sns.violinplot(data=df_scaled, inner="quart", scale="count")
+ax = sns.violinplot(data=df_scaled, inner="quart", density_norm="count")
 
 # 在图上标记原始数据的统计值（标准化后）
 for i, feature in enumerate(df.columns):

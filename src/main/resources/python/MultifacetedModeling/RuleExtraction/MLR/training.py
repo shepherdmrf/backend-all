@@ -27,10 +27,15 @@ def load_data(filename, sheet_name='data'):
 # 利用最佳特征团训练模型，以获得特征重要度
 if __name__ == '__main__':
     load_data_wb = '../../DataInput/data-85.xlsx'
+    if len(sys.argv) > 1:
+          kernels = ast.literal_eval(sys.argv[1])
+          print("MLR:")
+          print(kernels)
     data = load_data(load_data_wb, sheet_name='data')[:,
-           [0, 3, 7, 8, 9, 11, 12, 13, 16, 17, 18, 21, 22, 26, 27, 28, 29, 31, 35, 37, 42, 44, 45]]
-    train_x = data[:, :-1]
-    train_y = data[:, -1]
+           kernels[0]]
+    Energy= load_data(load_data_wb, sheet_name='data')[:,-1]
+    train_x = data[:, :]
+    train_y = Energy
 
     scaler = preprocessing.StandardScaler()
     train_x_pro = scaler.fit_transform(train_x)
@@ -42,5 +47,8 @@ if __name__ == '__main__':
     print(cv_rmse)
 
     wb = './training_result.xlsx'
+    if os.path.exists(wb):
+        os.remove(wb)
+
     create_workbook(wb)
     save_to_excel_1d(feature_importance, 'Importance', wb, 'data-3', 1, 2)

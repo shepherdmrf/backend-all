@@ -21,9 +21,12 @@ public enum ResultCodeEnums {
     MENUPATH_EXIST(16,"菜单路径已被占用"),
     EMAIL_FAIL(17,"邮件发送失败"),
     REPEAT_ACTIVE(18,"账号已激活，请勿重复操作"),
-
-
-    ;
+    REPEAT_FILENAME(19, "文件名重复"),
+    FILE_ERROR(20,"文件错误" ),
+    VALIDATION_ERROR(21, "文件验证失败，仅支持 .cif 文件"),
+    PARTIAL_SUCCESS(22, "部分操作成功"),
+    DUPLICATE_FILES(23, "存在重复文件，等待用户确认操作"),
+    INVALID_REQUEST(400, "无效的请求参数");
 
     private Integer code;
     private String msg;

@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface PlatformService {
     JSONObject GetSign(String userId, String roleId);
-    void SolveFeatureTable(String userId, String roleId,int repeat,int iteration);
+    void SolveFeatureTable(String userId, String roleId,int repeat,int iteration,String value,String radio);
     JSONObject SearchFeatureTable(String userId, String roleId, int page, int pageSize, String value1);
     void SolvePositiveKernel(String userId, String roleId);
     JSONObject GetKnowlegekernels(String userId, String roleId, List<List<Integer>> KnowledgeKernels);
@@ -15,8 +15,10 @@ public interface PlatformService {
     void SolvesimpleDecision(String userId, String roleId);
     JSONObject Search(String userId, String roleId,String value);
     void Solvekernel(String userId,String roleId);
-    JSONObject DrawMlrPicture(String userId,String roleId);
-
+    JSONObject DrawMlrPicture(String userId,String roleId) throws Exception;
     JSONObject DrawKnnPicture(String userId, String roleId);
+    JSONObject Analyrizeknn(String userId, String roleId);
+    void ServerExcelTable(JSONObject List);
+    JSONObject MLRRelationAnalyze(String userId, String roleId);
 }
 

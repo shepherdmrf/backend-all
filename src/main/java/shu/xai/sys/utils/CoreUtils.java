@@ -128,4 +128,11 @@ public class CoreUtils {
         return sdf.format(date); // 输出已经格式化的现在时间(24小时制)
     }
 
+    public static String getDateDay(){
+        SimpleDateFormat sdf = new SimpleDateFormat();// 格式化时间
+        sdf.applyPattern("yyyy-MM-dd");
+        Date date = new Date();// 获取当前时间
+        return sdf.format(date); // 输出已经格式化的现在时间(24小时制)
+    }
+
 }

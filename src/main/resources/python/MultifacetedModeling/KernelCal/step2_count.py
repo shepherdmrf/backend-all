@@ -13,6 +13,7 @@ sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8')
 # 步骤二：计算特征决策表每个分组中各个特征出现的频率
 
+print("run start")
 models = ['MLR', 'SVR', 'KNN', 'GPR']
 for model in models:
     for i in range(1):

@@ -31,16 +31,17 @@ import java.sql.*;
 @Service
 public class FeatureServiceImpl implements FeatureService {
 
-    private final FeatureMapper featureMapper;
-
     @Autowired
-    public FeatureServiceImpl(FeatureMapper featureMapper) {
-        this.featureMapper = featureMapper;
-    }
+    FeatureMapper featureMapper;
 
     @Override
     public List<Feature> getMLRData() {
-        return featureMapper.findDataMLR();
+        List<Feature> result = featureMapper.findDataMLR();
+        System.out.println("查询结果数量：" + result.size());
+        if (!result.isEmpty()) {
+            System.out.println("第一个结果：" + result.get(0));
+        }
+        return result;
     }
 
     @Override
