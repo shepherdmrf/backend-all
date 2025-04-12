@@ -1,8 +1,13 @@
 package shu.xai.lyzs.entity;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class ModelUpdateRequest {
     private int id;
-    private String model_name;
+
+    @JsonProperty("model_name")
+    private String modelName;
+
     private String fitness;
 
     // getters and setters
@@ -15,11 +20,11 @@ public class ModelUpdateRequest {
     }
 
     public String getModelName() {
-        return model_name;
+        return modelName;
     }
 
     public void setModelName(String model_name) {
-        this.model_name = model_name;
+        this.modelName = model_name;
     }
 
     public String getFitness() {

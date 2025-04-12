@@ -44,6 +44,11 @@ public class ModelTrainingController {
         @PostMapping("/add_model")
         public ResponseEntity<String> addModel(@RequestBody ModelData modelData) {
                 try {
+                        System.out.println("modelData: " + modelData);
+                        System.out.println("name: " + modelData.getName());
+                        System.out.println("path: " + modelData.getModelPath());
+                        System.out.println("intro: " + modelData.getIntroductionFile());
+                        System.out.println("arch: " + modelData.getArchitectureFile());
                         modelTrainingService.addModel(modelData);
                         return ResponseEntity.ok("模型添加成功");
                 } catch (Exception e) {

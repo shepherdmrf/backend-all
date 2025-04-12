@@ -105,7 +105,7 @@ public class CrystalStructureRepresentationServiceImpl implements CrystalStructu
         File pythonScriptDirectory = new File(pythonScriptPath).getParentFile();
 
         // 调用 Python 脚本进行转换
-        ProcessBuilder processBuilder = new ProcessBuilder("C:\\Program Files\\Python311\\python.exe", pythonScriptPath, originalCifPath.toString(), convertedCifFilePath.toString());
+        ProcessBuilder processBuilder = new ProcessBuilder("python.exe", pythonScriptPath, originalCifPath.toString(), convertedCifFilePath.toString());
 
         // 设置工作目录为 Python 脚本所在的目录
         processBuilder.directory(pythonScriptDirectory);

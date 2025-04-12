@@ -62,7 +62,7 @@ public class ActivationEnergyPredictionServiceImpl implements ActivationEnergyPr
         // Step 2: 复制 CIF 文件
         for (String filePath : filePaths) {
             String newFilePath = datasetDir + "/" + Paths.get(filePath).getFileName().toString();
-            Files.copy(Paths.get(filePath), Paths.get(newFilePath));
+            Files.copy(Paths.get(filePath), Paths.get(newFilePath), StandardCopyOption.REPLACE_EXISTING);
         }
 
         // Step 3: 生成 targets.csv
@@ -90,6 +90,7 @@ public class ActivationEnergyPredictionServiceImpl implements ActivationEnergyPr
 
         pb.directory(new File(pythonDir));
         pb.redirectErrorStream(true);
+        pb.environment().put("PYTHONIOENCODING", "utf-8");
         Process process = pb.start();
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
             String line;

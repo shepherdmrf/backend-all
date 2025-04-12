@@ -76,7 +76,7 @@ public interface FeatureMapper {
             "<script>",
             "INSERT INTO data_table.${tableName} (Features, Length, Score, CV_RMSE, RMSE, R2, Time) VALUES ",
             "<foreach collection='list' item='item' separator=','>",
-            "(#{item.features}, #{item.length}, #{item.score}, #{item.CV_RMSE}, #{item.rmse}, #{item.r2}, #{item.time})",
+            "(#{item.features}, #{item.length}, #{item.score}, #{item.cvRmse}, #{item.rmse}, #{item.r2}, #{item.time})",
             "</foreach>",
             "</script>"
     })
@@ -98,7 +98,7 @@ public interface FeatureMapper {
 
     @Insert("INSERT INTO data_table.${tableName1} (id, features, length, score, CV_RMSE, rmse, r2, time) " +
             "VALUES (#{maxCvRmseRow.id}, #{maxCvRmseRow.features}, #{maxCvRmseRow.length}, #{maxCvRmseRow.score}, " +
-            "#{maxCvRmseRow.CV_RMSE}, #{maxCvRmseRow.rmse}, #{maxCvRmseRow.r2}, #{maxCvRmseRow.time})")
+            "#{maxCvRmseRow.cvRmse}, #{maxCvRmseRow.rmse}, #{maxCvRmseRow.r2}, #{maxCvRmseRow.time})")
     void insertIntoMaxCvRmseTable(@Param("maxCvRmseRow") ExcelRowData maxCvRmseRow, @Param("tableName1") String tableName1);
 
     @Insert({
@@ -106,7 +106,7 @@ public interface FeatureMapper {
             "INSERT INTO data_table.${tableName} (id, features, length, score, CV_RMSE, rmse, r2, time)",
             "VALUES ",
             "<foreach collection='list' item='item' separator=','>",
-            "(#{item.id}, #{item.features}, #{item.length}, #{item.score}, #{item.CV_RMSE}, #{item.rmse}, #{item.r2}, #{item.time})",
+            "(#{item.id}, #{item.features}, #{item.length}, #{item.score}, #{item.cvRmse}, #{item.rmse}, #{item.r2}, #{item.time})",
             "</foreach>",
             "</script>"
     })

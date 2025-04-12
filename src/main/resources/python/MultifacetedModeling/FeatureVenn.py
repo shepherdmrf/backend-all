@@ -69,8 +69,15 @@ ellipse = Ellipse((0, 0), width=2.8, height=0.6*1.4, edgecolor="black", facecolo
 axes[0].add_patch(ellipse)
 
 kernel4_features = sorted(kernel4)
-kernel4_text = "     ".join(map(str, kernel4_features))
-axes[0].text(0, 0, kernel4_text, fontsize=18, ha="center", va="center", color="black")
+max_per_line = 6  # 每行最多显示7个
+lines = [
+    "     ".join(map(str, kernel4_features[i:i+max_per_line]))
+    for i in range(0, len(kernel4_features), max_per_line)
+]
+kernel4_text = "\n".join(lines)
+
+axes[0].text(0, 0, kernel4_text, fontsize=18, ha="center", va="center", color="black", linespacing=1.8)
+
 
 kernel3_only_features = sorted(kernel3 - kernel4)
 num_features = len(kernel3_only_features)

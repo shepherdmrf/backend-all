@@ -47,6 +47,7 @@ public class ActivationEnergyPredictionController {
             response.put("status", "error");
             response.put("message", e.getMessage());
             System.err.println("预测失败：" + e.getMessage());
+            e.printStackTrace();
         }
 
         return response;

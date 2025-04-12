@@ -1,5 +1,6 @@
 package shu.xai.lyzs.entity;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 
@@ -8,15 +9,20 @@ import javax.persistence.Table;
 @Data
 @Table(name = "sys_fitness_model")
 public class modelSelect {
+
     @Id
+    @JsonProperty("id")
     private int id;
-    private String ath_id;
 
-//    private String category;
+    @JsonProperty("ath_id")
+    private String athId;
 
-    private String model_name;
+    @JsonProperty("model_name")
+    private String modelName;
 
+    @JsonProperty("fitness")
     private String fitness;
+
     // getters and setters
     public int getId() {
         return id;
@@ -26,12 +32,20 @@ public class modelSelect {
         this.id = id;
     }
 
-    public String getModelName() {
-        return model_name;
+    public String getAthId() {
+        return athId;
     }
 
-    public void setModelName(String model_name) {
-        this.model_name = model_name;
+    public void setAthId(String athId) {
+        this.athId = athId;
+    }
+
+    public String getModelName() {
+        return modelName;
+    }
+
+    public void setModelName(String modelName) {
+        this.modelName = modelName;
     }
 
     public String getFitness() {

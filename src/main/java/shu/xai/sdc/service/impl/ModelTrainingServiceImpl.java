@@ -38,6 +38,8 @@ public class ModelTrainingServiceImpl implements ModelTrainingService {
     @Override
     public void addModel(ModelData modelData) throws Exception {
         // 将模型数据存入数据库
+        System.out.println("modelData: " + modelData);
+
         modelTrainingMapper.insert(modelData);
 
         // 获取 `models` 目录路径

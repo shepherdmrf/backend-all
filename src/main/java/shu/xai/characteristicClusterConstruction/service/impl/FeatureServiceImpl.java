@@ -171,6 +171,10 @@ public class FeatureServiceImpl implements FeatureService {
                 // 查询该表的数据并将其与 Sheet 标识符一起添加到结果列表
                 List<ExcelRowData> sheetData = queryStoredData(tableName);
 
+                for (ExcelRowData row : sheetData) {
+                    System.out.println(row);
+                }
+
                 // 为每个 Sheet 创建一个独立的 Map，区分不同的 Sheet
                 if(j != 10) {
                     Map<String, Object> sheetResult = new HashMap<>();
@@ -247,7 +251,7 @@ public class FeatureServiceImpl implements FeatureService {
             // 处理其他列数据，直接获取格式化后的字符串
             rowData.setLength(formatIfNumeric(dataFormatter.formatCellValue(row.getCell(1)), df));
             rowData.setScore(formatIfNumeric(dataFormatter.formatCellValue(row.getCell(2)), df));
-            rowData.setCV_RMSE(formatIfNumeric(dataFormatter.formatCellValue(row.getCell(3)), df));
+            rowData.setCvRmse(formatIfNumeric(dataFormatter.formatCellValue(row.getCell(3)), df));
             rowData.setRmse(formatIfNumeric(dataFormatter.formatCellValue(row.getCell(4)), df));
             rowData.setR2(formatIfNumeric(dataFormatter.formatCellValue(row.getCell(5)), df));
             rowData.setTime(formatIfNumeric(dataFormatter.formatCellValue(row.getCell(6)), df));
@@ -348,7 +352,7 @@ public class FeatureServiceImpl implements FeatureService {
             newRow.createCell(0).setCellValue(maxCvRmseRow.getFeatures());
             newRow.createCell(1).setCellValue(maxCvRmseRow.getLength());
             newRow.createCell(2).setCellValue(maxCvRmseRow.getScore());
-            newRow.createCell(3).setCellValue(maxCvRmseRow.getCV_RMSE());
+            newRow.createCell(3).setCellValue(maxCvRmseRow.getCvRmse());
             newRow.createCell(4).setCellValue(maxCvRmseRow.getRmse());
             newRow.createCell(5).setCellValue(maxCvRmseRow.getR2());
             newRow.createCell(6).setCellValue(maxCvRmseRow.getTime());

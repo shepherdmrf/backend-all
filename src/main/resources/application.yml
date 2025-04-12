@@ -3,7 +3,16 @@ spring:
     active: dev
   jackson:
     property-naming-strategy: UPPER_CAMEL_CASE
-
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 50MB
+  jpa:
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+    generate-ddl: false
 
 mybatis:
   mapper-locations: classpath:mapper/*.xml

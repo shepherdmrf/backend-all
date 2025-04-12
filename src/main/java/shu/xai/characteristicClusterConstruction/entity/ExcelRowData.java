@@ -1,11 +1,13 @@
 package shu.xai.characteristicClusterConstruction.entity;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class ExcelRowData {
     private int id;
     private String features;
     private String length;
     private String score;
-    private String CV_RMSE;
+    private String cvRmse;
     private String rmse;
     private String r2;
     private String time;
@@ -43,12 +45,12 @@ public class ExcelRowData {
         this.score = score;
     }
 
-    public String getCV_RMSE() {
-        return CV_RMSE;
+    public String getCvRmse() {
+        return cvRmse;
     }
 
-    public void setCV_RMSE(String cvRmse) {
-        this.CV_RMSE = cvRmse;
+    public void setCvRmse(String cvRmse) {
+        this.cvRmse = cvRmse;
     }
 
     public String getRmse() {
@@ -81,7 +83,7 @@ public class ExcelRowData {
                 "features='" + features + '\'' +
                 ", length='" + length + '\'' +
                 ", score='" + score + '\'' +
-                ", cvRmse=" + CV_RMSE +
+                ", cvRmse=" + cvRmse +
                 ", rmse='" + rmse + '\'' +
                 ", r2=" + r2 +
                 ", time=" + time +

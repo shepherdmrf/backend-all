@@ -1,5 +1,6 @@
 package shu.xai.lyzs.entity;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 
@@ -9,7 +10,12 @@ import javax.persistence.Table;
 @Table(name = "d_model_cluster")
 public class d_model_cluster {
     @Id
+    @JsonProperty("id")
     private Long id;
-    private String model_name;
+
+    @JsonProperty("model_name")
+    private String modelName;
+
+    @JsonProperty("fitness")
     private String fitness;
 }
