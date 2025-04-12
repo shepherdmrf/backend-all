@@ -73,7 +73,7 @@ public class PlatformController {
             int iteration = pageRequest.getIteration();
             String value1 = pageRequest.getValue1();
             String value=pageRequest.getValue();
-            String radio=pageRequest.getRadio();
+            Integer radio=pageRequest.getRadio();
             platformService.SolveFeatureTable(userId, roleId, repeat, iteration, value,radio);
             JSONObject paramsResult = platformService.SearchFeatureTable(userId, roleId, page, pagesize, value1);
             result = ResultUtils.commonResult(ResultCodeEnums.SUCCESS.getCode(), ResultCodeEnums.SUCCESS.getMsg(), paramsResult.toJSONString());

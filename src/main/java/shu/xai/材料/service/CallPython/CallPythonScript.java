@@ -3,6 +3,7 @@ package shu.xai.材料.service.CallPython;
 import shu.xai.characteristicClusterConstruction.entity.Feature;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.InputStreamReader;
 import java.io.IOException;
 import java.net.URLEncoder;
@@ -86,6 +87,50 @@ public class CallPythonScript {
             e.printStackTrace();
         }
     }
+    public static void CallSolvecluster() {
+        String pythonPath = "python";  // 或填写绝对路径
+        String scriptPath = "./step1_clustering.py";
+
+        ProcessBuilder processBuilder = new ProcessBuilder(pythonPath, scriptPath);
+        processBuilder.directory(new File("./src/main/resources/python/MultifacetedModeling/KernelCal"));
+        processBuilder.redirectErrorStream(false); // 不合并 stderr 到 stdout
+
+        try {
+            Process process = processBuilder.start();
+            System.out.println("Process started");
+
+            // 开两个线程分别读 stdout 和 stderr
+            new Thread(() -> {
+                try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8))) {
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        System.out.println("[stdout] " + line);
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }).start();
+
+            new Thread(() -> {
+                try (BufferedReader errorReader = new BufferedReader(new InputStreamReader(process.getErrorStream(), StandardCharsets.UTF_8))) {
+                    String line;
+                    while ((line = errorReader.readLine()) != null) {
+                        System.err.println("[stderr] " + line);
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }).start();
+
+            // 等待进程执行完
+            int exitCode = process.waitFor();
+            System.out.println("Python script exited with code: " + exitCode);
+
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
     public static void CallKnowlegeKernal(String arg) {
         // 设置 Python 可执行文件路径和脚本路径
         String pythonPath = "python.exe";

@@ -3,6 +3,10 @@ import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.sql.*;
 
 import org.springframework.dao.DataAccessException;
@@ -521,6 +525,52 @@ public class ExcelSqlSolve {
     // 保留4位小数
     private static double round(double value) {
         return Math.round(value * 10000.0) / 10000.0;
+    }
+
+    public void StarticToWorkSquare(String choice)
+    {
+        List<String>Models=new ArrayList<>();
+        Models.add("KNN");
+        Models.add("MLR");
+        Models.add("SVR");
+        Models.add("GPR");
+        // 假设目标文件路径和choice.xlsx的路径需要定义
+        String targetFileRootPath = "./src/main/resources/python/MultifacetedModeling/Results/OnTrain/DKNCOR/"; // 替换为实际目标文件路径
+        String choiceFileRootPath = "src/main/resources/python/MultifacetedModeling/DataPreProcessing/" ; // 替换为choice.xlsx所在路径
+        for (String item:Models)
+        {
+            String targetFilePath=targetFileRootPath+item+".xlsx";
+            String chooseFilePath=choiceFileRootPath+choice+item+".xlsx";
+            try {
+                // 获取目标文件对象
+                File targetFile = new File(targetFilePath);
+                String originalFileName = Paths.get(targetFilePath).getFileName().toString();
+                // 如果目标文件存在，则删除
+                if (targetFile.exists()) {
+                    if (!targetFile.delete()) {
+                        System.err.println("无法删除目标文件: " + targetFilePath);
+                        return;
+                    }
+                }
+                // 构建choice.xlsx的源路径
+                Path sourcePath = Paths.get(chooseFilePath);
+
+                // 检查源文件是否存在
+                if (!Files.exists(sourcePath)) {
+                    System.err.println("源文件不存在: " + chooseFilePath);
+                    return;
+                }
+                // 复制choice.xlsx到目标路径并重命名为原文件名
+                Path targetPath = Paths.get(targetFilePath);
+                Files.copy(sourcePath, targetPath, StandardCopyOption.REPLACE_EXISTING);
+
+                System.out.println("文件替换成功: " + originalFileName);
+
+            } catch (IOException e) {
+                System.err.println("处理文件时出错: " + e.getMessage());
+                e.printStackTrace();
+            }
+        }
     }
 }
 

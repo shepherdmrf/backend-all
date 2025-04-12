@@ -7,7 +7,7 @@ public class PageRequestCopy {
     private int Repeat;
     private int Iteration;
     private String Value;
-    private String Radio;
+    private Integer Radio;
 
     public int getPage() {
         return Page;
@@ -58,11 +58,11 @@ public class PageRequestCopy {
         Value = value;
     }
 
-    public String getRadio() {
+    public Integer getRadio() {
         return Radio;
     }
 
-    public void setRadio(String radio) {
+    public void setRadio(Integer radio) {
         Radio = radio;
     }
 }

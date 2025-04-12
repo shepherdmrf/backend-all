@@ -68,32 +68,54 @@ public class PlatformServiceImpl implements PlatformService {
         return response;
     }
 
-    public void SolveFeatureTable(String userId, String roleId, int repeat, int iteration,String value,String radio) {
-        List<String> arg1 = Arrays.asList(String.valueOf(1));
-        String work1 = "./src/main/resources/python/MultifacetedModeling/DataPreProcessing";
-        String script1 = "./split_data.py";
-        CallPythonScript.call(script1, work1, arg1);
-        List<String> arg2 = Arrays.asList(String.valueOf(1), String.valueOf(repeat), String.valueOf(iteration));
-        String work2 = "./src/main/resources/python/MultifacetedModeling/CodesForValidation";
-        String script2 = "./DKncorFSonTrain.py";
-        CallPythonScript.call(script2, work2, arg2);
-        List<String> models = Arrays.asList("GPR", "KNN", "MLR", "SVR");
-        // 清除数据库表并插入数据
-        for (int i = 0; i < models.size(); i++) {
+    public void SolveFeatureTable(String userId, String roleId, int repeat, int iteration,String value,Integer radio) {
+        if (radio == 1) {
+            List<String> arg1 = Arrays.asList(String.valueOf(1));
+            String work1 = "./src/main/resources/python/MultifacetedModeling/DataPreProcessing";
+            String script1 = "./split_data.py";
+            CallPythonScript.call(script1, work1, arg1);
+            List<String> arg2 = Arrays.asList(String.valueOf(1), String.valueOf(repeat), String.valueOf(iteration));
+            String work2 = "./src/main/resources/python/MultifacetedModeling/CodesForValidation";
+            String script2 = "./DKncorFSonTrain.py";
+            CallPythonScript.call(script2, work2, arg2);
+            List<String> models = Arrays.asList("GPR", "KNN", "MLR", "SVR");
+            // 清除数据库表并插入数据
+            for (int i = 0; i < models.size(); i++) {
 
-            String tablename = models.get(i) + "_feature_table";
-            String Sheetname = "result0";
-            try {
-                excelSqlSolve.clearTable(tablename);
-            } catch (Exception e) {
-                e.printStackTrace();
+                String tablename = models.get(i) + "_feature_table";
+                String Sheetname = "result0";
+                try {
+                    excelSqlSolve.clearTable(tablename);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                String exceladdress = "./src/main/resources/python/MultifacetedModeling/Results/OnTrain/DKNCOR" + "/" + models.get(i) + ".xlsx";
+                String Sql = "INSERT INTO `" + tablename + "` (`features`, `Length`, `CV RMSE`, `Score`, `Test RMSE`, `Test R2` , `Time`) VALUES (?, ?, ?, ?, ?, ?, ?)";
+                try {
+                    excelSqlSolve.insertExcelDataToSQL(exceladdress, Sql, Sheetname);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
-            String exceladdress = "./src/main/resources/python/MultifacetedModeling/Results/OnTrain/DKNCOR" + "/" + models.get(i) + ".xlsx";
-            String Sql = "INSERT INTO `" + tablename + "` (`features`, `Length`, `CV RMSE`, `Score`, `Test RMSE`, `Test R2` , `Time`) VALUES (?, ?, ?, ?, ?, ?, ?)";
-            try {
-                excelSqlSolve.insertExcelDataToSQL(exceladdress, Sql, Sheetname);
-            } catch (Exception e) {
-                e.printStackTrace();
+        } else if (radio == 2) {
+            excelSqlSolve.StarticToWorkSquare(value);
+            List<String> models = Arrays.asList("GPR", "KNN", "MLR", "SVR");
+            for (int i = 0; i < models.size(); i++) {
+
+                String tablename = models.get(i) + "_feature_table";
+                String Sheetname = "result0";
+                try {
+                    excelSqlSolve.clearTable(tablename);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                String exceladdress = "./src/main/resources/python/MultifacetedModeling/Results/OnTrain/DKNCOR" + "/" + models.get(i) + ".xlsx";
+                String Sql = "INSERT INTO `" + tablename + "` (`features`, `Length`, `CV RMSE`, `Score`, `Test RMSE`, `Test R2` , `Time`) VALUES (?, ?, ?, ?, ?, ?, ?)";
+                try {
+                    excelSqlSolve.insertExcelDataToSQL(exceladdress, Sql, Sheetname);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
@@ -281,7 +303,7 @@ public class PlatformServiceImpl implements PlatformService {
     public void Solvecluster() {
         String script = "./step1_clustering.py";
         String work = "./src/main/resources/python/MultifacetedModeling/KernelCal";
-        CallPythonScript.call(script, work);
+        CallPythonScript.CallSolvecluster();
         List<String> models = Arrays.asList("GPR", "KNN", "MLR", "SVR");
         // 清除数据库表并插入数据
         for (int i = 0; i < models.size(); i++) {
